@@ -266,9 +266,12 @@ export default function DraggableRings({
   }, [getAngle, onFullnessChange, onEnergyChange, onHydrationChange, showTip]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
-    dismissHint();
+    // Stop the browser from starting a text selection during the drag
+    e.preventDefault();
     const ring = nearestRing(e.clientX, e.clientY);
     if (!ring) return;
+    // Only a real drag on a ring dismisses the "Drag me" hint
+    dismissHint();
     draggingRef.current = ring;
     setDragRing(ring);
     (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
@@ -371,13 +374,14 @@ export default function DraggableRings({
   const tipW = tip ? tip.text.length * 7.2 + 20 : 0;
 
   return (
-    <div className="relative w-full flex flex-col items-center">
+    <div className="relative w-full flex flex-col items-center select-none">
       <div className="relative w-full max-w-[300px] sm:max-w-sm md:max-w-md lg:max-w-none mx-auto">
         <svg
           ref={svgRef}
           viewBox="0 0 320 320"
           width="100%"
-          style={{ display: "block", touchAction: "none", cursor: "crosshair", overflow: "visible" }}
+          style={{ display: "block", touchAction: "none", cursor: "crosshair", overflow: "visible",
+                   userSelect: "none", WebkitUserSelect: "none" }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -487,20 +491,29 @@ export default function DraggableRings({
             );
           })()}
 
-          {/* Drag tooltip */}
-          {tip && (
+          {/* Drag tooltip — anchored radially outward from the knob so it hugs
+              the handle at every angle and never sits over the bowl */}
+          {tip && (() => {
+            const dx = tip.kx - CX, dy = tip.ky - CY;
+            const len = Math.sqrt(dx * dx + dy * dy) || 1;
+            let bx = tip.kx + (dx / len) * 30;
+            let by = tip.ky + (dy / len) * 26;
+            // Clamp so the bubble stays near the viewBox at extreme angles
+            bx = Math.max(tipW / 2 - 24, Math.min(320 - tipW / 2 + 24, bx));
+            by = Math.max(-6, Math.min(334, by));
+            return (
             <g style={{ pointerEvents: "none" }}>
               <rect
-                x={tip.kx - tipW / 2}
-                y={tip.ky - 43}
+                x={bx - tipW / 2}
+                y={by - 13}
                 width={tipW}
                 height={26}
                 rx={9}
                 fill="#1F4E49"
               />
               <text
-                x={tip.kx}
-                y={tip.ky - 30}
+                x={bx}
+                y={by}
                 fill={CREAM}
                 fontSize={12}
                 fontFamily="Lato, sans-serif"
@@ -511,7 +524,8 @@ export default function DraggableRings({
                 {tip.text}
               </text>
             </g>
-          )}
+            );
+          })()}
         </svg>
         <style>{`
           .feelfed-knob-pulse {
