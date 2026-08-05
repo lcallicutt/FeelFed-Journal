@@ -128,6 +128,28 @@ export default function DraggableRings({
   // Active ring
   const [activeRing, setActiveRingState] = useState<RingId | null>(null);
 
+  // Dragging state (for trail + hint dismissal)
+  const [dragRing, setDragRing] = useState<RingId | null>(null);
+
+  // Load pulse on the knobs + "Drag me" hint — until first interaction
+  const [loadPulse, setLoadPulse] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const interactedRef = useRef(false);
+
+  useEffect(() => {
+    // After the staggered load sweep settles (~1.5s), pulse knobs + show hint
+    const t1 = setTimeout(() => { if (!interactedRef.current) setLoadPulse(true); }, 1600);
+    const t2 = setTimeout(() => { if (!interactedRef.current) setShowHint(true); }, 1900);
+    const t3 = setTimeout(() => setLoadPulse(false), 6400);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
+  const dismissHint = useCallback(() => {
+    interactedRef.current = true;
+    setShowHint(false);
+    setLoadPulse(false);
+  }, []);
+
   // Keep val ref current on every render
   valRef.current = { f: fullness / 10, e: energy / 10, h: hydration / 10 };
 
@@ -244,13 +266,15 @@ export default function DraggableRings({
   }, [getAngle, onFullnessChange, onEnergyChange, onHydrationChange, showTip]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
+    dismissHint();
     const ring = nearestRing(e.clientX, e.clientY);
     if (!ring) return;
     draggingRef.current = ring;
+    setDragRing(ring);
     (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
     setActive(ring);
     applyPointer(e.clientX, e.clientY);
-  }, [nearestRing, setActive, applyPointer]);
+  }, [nearestRing, setActive, applyPointer, dismissHint]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
     if (draggingRef.current) {
@@ -262,6 +286,7 @@ export default function DraggableRings({
 
   const handlePointerUp = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
     draggingRef.current = null;
+    setDragRing(null);
     (e.currentTarget as SVGSVGElement).releasePointerCapture(e.pointerId);
     scheduleTipHide();
     setTimeout(() => {
@@ -298,6 +323,13 @@ export default function DraggableRings({
     const knob = pct < 0.001 ? { x: CX, y: CY - r } : knobXY(r, endA);
     const sw   = 13 + pct * 6;
     const auraOpacity = pct * pct * 0.75;
+    const isDraggingThis = dragRing === id;
+    const isActiveThis   = activeRing === id;
+
+    // Movement trail: fading comet behind the knob while dragging
+    const trailD = isDraggingThis && endA > 4
+      ? describeArc(CX, CY, r, Math.max(0, endA - 42), endA)
+      : null;
 
     return (
       <g key={id} data-ring={id}>
@@ -310,9 +342,26 @@ export default function DraggableRings({
           <path d={arcD} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round"
             style={{ transition: "stroke 300ms ease, stroke-width 240ms ease" }} />
         )}
-        <circle cx={knob.x} cy={knob.y} r={9} fill={CREAM} stroke={color} strokeWidth={2.5}
+        {/* Drag trail — bright blurred comet behind the moving knob */}
+        {trailD && (
+          <path d={trailD} fill="none" stroke={color} strokeWidth={sw + 12}
+            strokeLinecap="round" opacity={0.55} filter={`url(#${glowId})`}
+            style={{ pointerEvents: "none" }} />
+        )}
+        {/* Knob halo glow — always visible, stronger on hover/drag */}
+        <circle cx={knob.x} cy={knob.y} r={isDraggingThis ? 20 : isActiveThis ? 17 : 14}
+          fill={color} filter={`url(#${glowId})`}
+          opacity={isDraggingThis ? 0.7 : isActiveThis ? 0.5 : 0.3}
+          style={{ pointerEvents: "none", transition: "opacity 200ms ease" }} />
+        {/* Load pulse — expanding ripple ring around the knob */}
+        {loadPulse && (
+          <circle cx={knob.x} cy={knob.y} r={10} fill="none" stroke={color} strokeWidth={2}
+            className="feelfed-knob-pulse" style={{ pointerEvents: "none" }} />
+        )}
+        <circle cx={knob.x} cy={knob.y} r={isDraggingThis ? 11 : 9} fill={CREAM}
+          stroke={color} strokeWidth={isDraggingThis ? 3.5 : 2.5}
           style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.16))", cursor: "grab",
-                   transition: "stroke 300ms ease" }} />
+                   transition: "stroke 300ms ease, r 150ms ease, stroke-width 150ms ease" }} />
         <circle cx={CX} cy={CY} r={r} fill="none" stroke="transparent" strokeWidth={38}
           style={{ cursor: "pointer" }} />
       </g>
@@ -416,6 +465,28 @@ export default function DraggableRings({
               fill="none" stroke="#2E7C74" strokeWidth={2.5} opacity={0.45} />
           </g>
 
+          {/* "Drag me" hint — soft tooltip near the outer knob until first interaction */}
+          {showHint && !tip && !dragRing && (() => {
+            const endA = (fullness / 10) * 360;
+            const k = fullness < 0.05 ? { x: CX, y: CY - OUTER_R } : knobXY(OUTER_R, endA);
+            // Offset the bubble away from the ring centre so it never overlaps the knob
+            const dx = k.x - CX, dy = k.y - CY;
+            const len = Math.sqrt(dx * dx + dy * dy) || 1;
+            const bx = k.x + (dx / len) * 34;
+            const by = k.y + (dy / len) * 24;
+            return (
+              <g className="feelfed-hint-float" style={{ pointerEvents: "none" }}>
+                <rect x={bx - 38} y={by - 14} width={76} height={28} rx={14}
+                  fill="rgba(255,255,255,0.95)" stroke="rgba(58,143,136,0.35)" strokeWidth={1} />
+                <text x={bx} y={by + 1} fill="#1F4E49" fontSize={12}
+                  fontFamily="Poppins, sans-serif" fontWeight="600"
+                  textAnchor="middle" dominantBaseline="middle">
+                  Drag me
+                </text>
+              </g>
+            );
+          })()}
+
           {/* Drag tooltip */}
           {tip && (
             <g style={{ pointerEvents: "none" }}>
@@ -442,6 +513,25 @@ export default function DraggableRings({
             </g>
           )}
         </svg>
+        <style>{`
+          .feelfed-knob-pulse {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: feelfed-pulse 1.6s ease-out 3;
+          }
+          @keyframes feelfed-pulse {
+            0%   { transform: scale(1);   opacity: 0.8; }
+            70%  { transform: scale(2.4); opacity: 0; }
+            100% { transform: scale(2.4); opacity: 0; }
+          }
+          .feelfed-hint-float {
+            animation: feelfed-hint-bob 2.2s ease-in-out infinite;
+          }
+          @keyframes feelfed-hint-bob {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-4px); }
+          }
+        `}</style>
       </div>
     </div>
   );

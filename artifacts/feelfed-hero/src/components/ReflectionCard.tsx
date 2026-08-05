@@ -18,31 +18,113 @@ type Band = "L" | "M" | "H";
 const band = (v: number): Band => (v <= 3 ? "L" : v <= 6 ? "M" : "H");
 type LookupKey = `${Band},${Band},${Band}`;
 
-const LOOKUP: Partial<Record<LookupKey, string>> = {
-  "H,H,H": "Nourished and charged. Comfortable fullness, strong hydration, energy on the rise. This is the shape of a good day, and now it has a record.",
-  "H,H,L": "Your body is asking for gentleness. Fullness is high while hydration sits low. One thing at a time — that's still a record worth keeping.",
-  "H,L,H": "Your body is asking for gentleness. Fullness is high while energy sits low. That is a real combination, and it is written down now. Nothing here needs fixing today.",
-  "H,L,L": "Quite full, quite depleted. Your body stored something today even if it didn't feel like enough. That counts.",
-  "H,M,M": "Full and steady — a real baseline. The middle ground is underrated. This entry says you showed up somewhere solid.",
-  "M,H,H": "Running well on not much. Energy and hydration holding up. Some days efficiency is its own kind of nourishment.",
-  "M,H,L": "Energised but running dry. Brilliant often comes before thirsty. A glass of water now would complete this picture.",
-  "M,M,H": "Balanced and hydrated — the quietest kind of good. Nothing dramatic in any direction. Ordinary days are the ones that make a pattern readable.",
-  "M,M,M": "Four bites is still data. You showed up. Mid across the board means you're in the range where the body is just getting by — and that is enough to record.",
-  "M,M,L": "Middle of the road in most things, a little dry. The entry is here either way. That is what the journal is for.",
-  "M,L,H": "Low battery, still showing up. Not much in, not much left over. Opening this on a day like today counts as the entry.",
-  "M,L,L": "Running on low across the board. That's information, not failure. Some days the log is just a witness.",
-  "L,H,H": "Light and clear — sometimes this is exactly right. High energy on a light stomach can feel like the right kind of empty.",
-  "L,H,L": "Empty and buzzing. The kind of energy that burns fast. Your body is spending reserves it will want back later.",
-  "L,L,L": "Everything at zero. This is where the journal starts, not ends. You opened it. That is the whole entry.",
-  "L,M,M": "A little of everything — this is where gentle eating begins. No pressure, no grade. Just a starting point written down.",
-  "L,M,H": "Hydrated and waiting. Your body knows what comes next. Sometimes the drink comes before the food, and that is still a record.",
-  "L,L,H": "Quiet and watered. Rest is data too.",
+interface Reflection {
+  title: string;
+  body: string;
+  next: string;
+}
+
+const LOOKUP: Partial<Record<LookupKey, Reflection>> = {
+  "H,H,H": {
+    title: "Nourished & charged.",
+    body: "Comfortable fullness, strong hydration, and energy on the rise. This is the shape of a good day, and now it has a record.",
+    next: "This may be a good moment for light movement—or simply enjoying how steady you feel.",
+  },
+  "H,H,L": {
+    title: "Full & bright, running dry.",
+    body: "Fullness and energy are up while hydration sits low. One thing at a time — that's still a record worth keeping.",
+    next: "A slow glass of water would round this moment out nicely.",
+  },
+  "H,L,H": {
+    title: "Fed & quiet.",
+    body: "Fullness is high while energy sits low. That is a real combination, and it is written down now. Nothing here needs fixing today.",
+    next: "Rest is allowed. Let the meal do its work for a while.",
+  },
+  "H,L,L": {
+    title: "Quite full, quite depleted.",
+    body: "Your body stored something today even if it didn't feel like enough. That counts.",
+    next: "Maybe water and a soft pause before anything else.",
+  },
+  "H,M,M": {
+    title: "Full & steady.",
+    body: "A real baseline. The middle ground is underrated — this entry says you showed up somewhere solid.",
+    next: "Nothing to change. Steady is worth noticing on its own.",
+  },
+  "M,H,H": {
+    title: "Running well on not much.",
+    body: "Energy and hydration are holding up. Some days efficiency is its own kind of nourishment.",
+    next: "If appetite shows up later, it will find you ready.",
+  },
+  "M,H,L": {
+    title: "Energised, running dry.",
+    body: "Brilliant often comes before thirsty. A glass of water now would complete this picture.",
+    next: "Try a few sips before the next thing on your list.",
+  },
+  "M,M,H": {
+    title: "Balanced & hydrated.",
+    body: "The quietest kind of good. Nothing dramatic in any direction — ordinary days are the ones that make a pattern readable.",
+    next: "Carry on as you are. This is a fine place to be.",
+  },
+  "M,M,M": {
+    title: "Four bites is still data.",
+    body: "You showed up. Mid across the board means you're in the range where the body is just getting by — and that is enough to record.",
+    next: "A stretch, a sip, or a snack — any small kindness fits here.",
+  },
+  "M,M,L": {
+    title: "Middle of the road, a little dry.",
+    body: "The entry is here either way. That is what the journal is for.",
+    next: "Water first, everything else after.",
+  },
+  "M,L,H": {
+    title: "Low battery, still showing up.",
+    body: "Not much in, not much left over. Opening this on a day like today counts as the entry.",
+    next: "Something small and easy to eat might meet you where you are.",
+  },
+  "M,L,L": {
+    title: "Running low across the board.",
+    body: "That's information, not failure. Some days the log is just a witness.",
+    next: "Gentleness first — a sip of water, then whatever feels possible.",
+  },
+  "L,H,H": {
+    title: "Light & clear.",
+    body: "Sometimes this is exactly right. High energy on a light stomach can feel like the right kind of empty.",
+    next: "Keep a small snack nearby for when the lightness fades.",
+  },
+  "L,H,L": {
+    title: "Empty & buzzing.",
+    body: "The kind of energy that burns fast. Your body is spending reserves it will want back later.",
+    next: "Water and a few bites soon would soften the landing.",
+  },
+  "L,L,L": {
+    title: "Everything at zero.",
+    body: "This is where the journal starts, not ends. You opened it. That is the whole entry.",
+    next: "No next step required. Being here was the step.",
+  },
+  "L,M,M": {
+    title: "A little of everything.",
+    body: "This is where gentle eating begins. No pressure, no grade. Just a starting point written down.",
+    next: "If one small bite feels doable, that's a fine place to start.",
+  },
+  "L,M,H": {
+    title: "Hydrated & waiting.",
+    body: "Your body knows what comes next. Sometimes the drink comes before the food, and that is still a record.",
+    next: "Food can follow whenever it's ready to.",
+  },
+  "L,L,H": {
+    title: "Quiet & watered.",
+    body: "Rest is data too.",
+    next: "Stay soft with yourself. Nothing here is urgent.",
+  },
 };
 
-const FALLBACK = "Four bites is still data. You showed up.";
+const FALLBACK: Reflection = {
+  title: "Four bites is still data.",
+  body: "You showed up.",
+  next: "Whatever comes next can be small.",
+};
 
 export default function ReflectionCard({ fullness, energy, hydration }: ReflectionCardProps) {
-  const [displayedText, setDisplayedText] = useState("");
+  const [displayedTitle, setDisplayedTitle] = useState("");
   const [bodyVisible, setBodyVisible] = useState(false);
   const [sheen, setSheen] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -50,6 +132,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
   const typewriterRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sheenTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTypeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bodyRevealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Guard: only re-type when the target text actually changes
   const lastTitleRef = useRef("");
@@ -67,24 +150,19 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
     },
   });
 
-  const targetText = useMemo(() => {
-    const f = band(fullness);
-    const e = band(energy);
-    const h = band(hydration);
-    const key: LookupKey = `${f},${e},${h}`;
+  const reflection = useMemo<Reflection>(() => {
+    const key: LookupKey = `${band(fullness)},${band(energy)},${band(hydration)}`;
     return LOOKUP[key] ?? FALLBACK;
   }, [fullness, energy, hydration]);
 
-  const targetTextRef = useRef(targetText);
-  targetTextRef.current = targetText;
-
-  const startSequence = useCallback((text: string) => {
+  const startSequence = useCallback((title: string) => {
     // Clear any in-flight timers
     if (typewriterRef.current)  clearTimeout(typewriterRef.current);
     if (sheenTimerRef.current)  clearTimeout(sheenTimerRef.current);
     if (startTypeTimer.current) clearTimeout(startTypeTimer.current);
+    if (bodyRevealTimer.current) clearTimeout(bodyRevealTimer.current);
 
-    setDisplayedText("");
+    setDisplayedTitle("");
     setBodyVisible(false);
     setSheen(true);
     sheenTimerRef.current = setTimeout(() => setSheen(false), 350);
@@ -93,23 +171,23 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
       let i = 0;
       const type = () => {
         i++;
-        setDisplayedText(text.slice(0, i));
-        if (i < text.length) {
-          typewriterRef.current = setTimeout(type, 30);
+        setDisplayedTitle(title.slice(0, i));
+        if (i < title.length) {
+          typewriterRef.current = setTimeout(type, 34);
         } else {
-          setTimeout(() => setBodyVisible(true), 80);
+          bodyRevealTimer.current = setTimeout(() => setBodyVisible(true), 120);
         }
       };
       type();
     }, 200);
   }, []);
 
-  // Re-trigger typewriter only when the text actually changes
+  // Re-trigger typewriter only when the title actually changes
   useEffect(() => {
-    if (targetText === lastTitleRef.current) return;
-    lastTitleRef.current = targetText;
-    startSequence(targetText);
-  }, [targetText, startSequence]);
+    if (reflection.title === lastTitleRef.current) return;
+    lastTitleRef.current = reflection.title;
+    startSequence(reflection.title);
+  }, [reflection.title, startSequence]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -117,6 +195,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
       if (typewriterRef.current)  clearTimeout(typewriterRef.current);
       if (sheenTimerRef.current)  clearTimeout(sheenTimerRef.current);
       if (startTypeTimer.current) clearTimeout(startTypeTimer.current);
+      if (bodyRevealTimer.current) clearTimeout(bodyRevealTimer.current);
     };
   }, []);
 
@@ -127,10 +206,13 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
         fullness,
         energy,
         hydration,
-        reflection: targetText,
+        reflection: `${reflection.title} ${reflection.body}`,
       },
     });
-  }, [saveMoment, fullness, energy, hydration, targetText]);
+  }, [saveMoment, fullness, energy, hydration, reflection]);
+
+  // Card glow follows overall state — warmer/brighter the higher things are
+  const vitality = (fullness + energy + hydration) / 30; // 0–1
 
   return (
     <div
@@ -138,12 +220,16 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
       style={{
         position: "relative",
         overflow: "hidden",
-        background: "rgba(251,247,242,0.9)",
-        border: "1px solid rgba(58,143,136,0.15)",
-        borderRadius: "0.75rem",
-        padding: "18px 20px 14px",
+        background: "linear-gradient(160deg, rgba(255,255,255,0.96), rgba(251,247,242,0.92))",
+        border: `1.5px solid rgba(58,143,136,${(0.22 + vitality * 0.3).toFixed(2)})`,
+        borderRadius: "1rem",
+        padding: "20px 22px 16px",
         backdropFilter: "blur(6px)",
-        boxShadow: "0 2px 16px rgba(31,78,73,0.07)",
+        boxShadow: [
+          `0 4px 24px rgba(31,78,73,${(0.1 + vitality * 0.08).toFixed(2)})`,
+          `0 0 ${Math.round(12 + vitality * 26)}px rgba(240,165,118,${(vitality * 0.35).toFixed(2)})`,
+        ].join(", "),
+        transition: "border-color 500ms ease, box-shadow 500ms ease",
         width: "100%",
       }}
     >
@@ -163,36 +249,37 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
       />
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
         <span style={{ color: TEAL, fontSize: 8 }}>●</span>
         <span
           className="font-sans"
           style={{
-            fontSize: 9,
+            fontSize: 10,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             color: DEEP_TEAL,
-            opacity: 0.6,
+            opacity: 0.7,
             fontVariant: "small-caps",
+            fontWeight: 600,
           }}
         >
-          FeelFed Noticing
+          FeelFed noticed
         </span>
       </div>
 
-      {/* Typewriter text */}
+      {/* Title — typewriter */}
       <p
         className="font-serif"
         style={{
           fontStyle: "italic",
-          fontSize: 16,
-          lineHeight: 1.55,
+          fontSize: 21,
+          lineHeight: 1.3,
           color: DEEP_TEAL,
-          minHeight: "3.5rem",
+          minHeight: "1.8rem",
           margin: 0,
         }}
       >
-        {displayedText}
+        {displayedTitle}
         <span
           style={{
             display: "inline-block",
@@ -206,6 +293,40 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
         />
       </p>
 
+      {/* Body + next step */}
+      <div
+        style={{
+          opacity: bodyVisible ? 1 : 0,
+          transform: bodyVisible ? "translateY(0)" : "translateY(6px)",
+          transition: "opacity 0.55s ease, transform 0.55s ease",
+        }}
+      >
+        <p
+          className="font-mono"
+          style={{
+            fontSize: 13.5,
+            lineHeight: 1.6,
+            color: DEEP_TEAL,
+            opacity: 0.85,
+            margin: "8px 0 0",
+          }}
+        >
+          {reflection.body}
+        </p>
+        <p
+          className="font-mono"
+          style={{
+            fontStyle: "italic",
+            fontSize: 12.5,
+            lineHeight: 1.55,
+            color: TEAL,
+            margin: "10px 0 0",
+          }}
+        >
+          {reflection.next}
+        </p>
+      </div>
+
       {/* Footer row */}
       <div
         style={{
@@ -215,7 +336,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
           gap: 12,
           marginTop: 14,
           opacity: bodyVisible ? 1 : 0,
-          transition: "opacity 0.6s ease",
+          transition: "opacity 0.6s ease 150ms",
         }}
       >
         <p

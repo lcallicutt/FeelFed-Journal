@@ -56,7 +56,7 @@ export default function MoteCanvas({ energy }: MoteCanvasProps) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const energyVal = energyRef.current;
-      const targetCount = Math.round(energyVal * 2.5); // 0–25 motes
+      const targetCount = Math.round(energyVal * 4); // 0–40 motes
 
       // Spawn new motes if needed
       while (motesRef.current.length < targetCount) {

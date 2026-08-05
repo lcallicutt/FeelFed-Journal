@@ -25,7 +25,6 @@ export default function Home() {
   const [energy, setEnergy]       = useState(0);
   const [hydration, setHydration] = useState(0);
   const [mounted, setMounted]     = useState(false);
-  const [arrowBounce, setArrowBounce] = useState(false);
   const [waitlistOpen, setWaitlistOpen] = useState(false);
   const [deviceId]  = useState(() => getDeviceId());
   const [prefilled, setPrefilled] = useState(false);
@@ -82,15 +81,6 @@ export default function Home() {
     return () => { clearTimeout(tMount); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
-  // Arrow bounce loop
-  useEffect(() => {
-    const id = setInterval(() => {
-      setArrowBounce(true);
-      setTimeout(() => setArrowBounce(false), 600);
-    }, 2400);
-    return () => clearInterval(id);
-  }, []);
-
   const handleFullness  = useCallback((v: number) => setFullness(v),  []);
   const handleEnergy    = useCallback((v: number) => setEnergy(v),    []);
   const handleHydration = useCallback((v: number) => setHydration(v), []);
@@ -112,37 +102,7 @@ export default function Home() {
 
   const interactivePanel = (
     <>
-      {/* Drag prompt — hidden on large screens where ring is always prominent */}
-      <div style={{ ...fade(280), marginBottom: 8 }} className="lg:hidden">
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span
-            className="font-sans"
-            style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase",
-              color: DEEP_TEAL, opacity: 0.5, fontVariant: "small-caps" }}
-          >
-            Drag a ring
-          </span>
-          <span
-            style={{
-              color: DEEP_TEAL, opacity: 0.5, fontSize: 13, display: "inline-block",
-              transform: arrowBounce ? "translateY(3px)" : "translateY(0)",
-              transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-            }}
-          >
-            ↓
-          </span>
-        </div>
-      </div>
-
-      {/* Desktop drag label */}
-      <div style={fade(220)} className="hidden lg:flex items-center gap-2 mb-3">
-        <span className="font-sans" style={{ fontSize: 10, letterSpacing: "0.16em",
-          textTransform: "uppercase", color: DEEP_TEAL, opacity: 0.45, fontVariant: "small-caps" }}>
-          Drag a ring to log how you feel
-        </span>
-      </div>
-
-      {/* Ring cluster */}
+      {/* Ring cluster — the rings carry their own drag cues (glow, pulse, hint) */}
       <div style={{ ...fade(300), width: "100%" }}>
         <DraggableRings
           fullness={fullness}
@@ -246,11 +206,11 @@ export default function Home() {
             <p className="font-mono"
               style={{ fontSize: "clamp(0.875rem, 2.2vw, 1rem)", lineHeight: 1.65,
                 color: DEEP_TEAL, opacity: 0.8, margin: 0, marginBottom: 28 }}>
-              Most food apps assume you finish the plate. FeelFed is for the days
-              you get full in three bites, the days a smoothie is the win, the days
-              there's no appetite at all.{" "}
+              Most food apps assume you finish the plate. FeelFed records what
+              actually happened: the four bites, the smoothie day, or the day you
+              had no appetite at all.{" "}
               <strong style={{ fontWeight: 700 }}>
-                Log what actually happened. Nothing gets graded.
+                Log fullness, energy, and hydration without grades, streaks, or guilt.
               </strong>
             </p>
           </div>
