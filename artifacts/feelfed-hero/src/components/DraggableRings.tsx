@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, useEffect } from "react";
+import { useRef, useCallback, useState, useEffect, useId } from "react";
 
 export type RingId = "fullness" | "energy" | "hydration";
 
@@ -273,6 +273,14 @@ export default function DraggableRings({
     if (!draggingRef.current) setActive(null);
   }, [setActive]);
 
+  // Unique SVG def IDs — this component renders twice (mobile + desktop layouts),
+  // and duplicate IDs make url(#...) resolve to the hidden copy, breaking the
+  // bowl clip (water renders outside the bowl) and filters in some browsers.
+  const uid = useId();
+  const clipId = `bowl-clip${uid}`;
+  const glowId = `ring-glow${uid}`;
+  const haloId = `halo-blur${uid}`;
+
   // ── derived render values ────────────────────────────────────────────────────
   const ePct  = energy / 10;
   const hPct  = hydration / 10;
@@ -296,7 +304,7 @@ export default function DraggableRings({
         <circle cx={CX} cy={CY} r={r} fill="none" stroke={track} strokeWidth={16} />
         {arcD && auraOpacity > 0.02 && (
           <path d={arcD} fill="none" stroke={color} strokeWidth={sw + 7}
-            strokeLinecap="round" opacity={auraOpacity} filter="url(#ring-glow)" />
+            strokeLinecap="round" opacity={auraOpacity} filter={`url(#${glowId})`} />
         )}
         {arcD && (
           <path d={arcD} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round"
@@ -334,13 +342,13 @@ export default function DraggableRings({
               computed by applying BOWL_T to the reference-space bowl outline so
               it aligns with the rendered bowl regardless of surrounding transforms.
             */}
-            <clipPath id="bowl-clip">
+            <clipPath id={clipId}>
               <path d={BOWL_CLIP_D} />
             </clipPath>
-            <filter id="ring-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="7" />
             </filter>
-            <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%">
+            <filter id={haloId} x="-80%" y="-80%" width="260%" height="260%">
               <feGaussianBlur stdDeviation="14" />
             </filter>
           </defs>
@@ -348,7 +356,7 @@ export default function DraggableRings({
           {/* Energy halo — behind all rings */}
           <circle cx={CX} cy={CY} r={haloR} fill="#FFB073"
             opacity={+(Math.max(0, ePct - 0.42) * 0.62).toFixed(3)}
-            filter="url(#halo-blur)" />
+            filter={`url(#${haloId})`} />
 
           {/* Energy rays */}
           {Array.from({ length: 12 }, (_, i) => {
@@ -379,7 +387,7 @@ export default function DraggableRings({
           </g>
 
           {/* Layer 2: Water + bubbles — rendered in VIEWPORT coordinates, clipped to bowl */}
-          <g clipPath="url(#bowl-clip)">
+          <g clipPath={`url(#${clipId})`}>
             <path ref={waterRef} d="" fill="#3A8F88" opacity="0.85" />
             {Array.from({ length: 7 }, (_, i) => (
               <circle key={i}
