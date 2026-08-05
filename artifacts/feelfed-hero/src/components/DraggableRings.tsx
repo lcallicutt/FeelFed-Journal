@@ -16,12 +16,10 @@ const MID_R = 103;
 const INNER_R = 68;
 const STROKE = 15;
 
-// Colors
 const TEAL = "#3A8F88";
 const PEACH = "#F0A576";
 const BLUE = "#5FA8C4";
 const CREAM = "#FBF7F2";
-const DEEP_TEAL = "#1F4E49";
 
 function describeArc(
   cx: number,
@@ -30,7 +28,6 @@ function describeArc(
   startDeg: number,
   endDeg: number
 ): string {
-  // Convert degrees to radians (0° = 12 o'clock = top)
   const toRad = (deg: number) => ((deg - 90) * Math.PI) / 180;
   const start = toRad(startDeg);
   const end = toRad(endDeg);
@@ -44,6 +41,12 @@ function describeArc(
 
 function fullCircle(cx: number, cy: number, r: number): string {
   return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx - 0.001} ${cy - r}`;
+}
+
+/** XY position of the arc endpoint (the knob location) */
+function arcEndpoint(r: number, valueDeg: number): { x: number; y: number } {
+  const rad = ((valueDeg - 90) * Math.PI) / 180;
+  return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
 }
 
 type RingId = "fullness" | "energy" | "hydration";
@@ -85,7 +88,6 @@ export default function DraggableRings({
       const svgY = (clientY - rect.top) * scaleY;
       const dx = svgX - CX;
       const dy = svgY - CY;
-      // atan2 from 12 o'clock, clockwise
       let angle = Math.atan2(dx, -dy) * (180 / Math.PI);
       if (angle < 0) angle += 360;
       return angle;
@@ -114,7 +116,7 @@ export default function DraggableRings({
       let minDiff = Infinity;
       for (const { id, r } of rings) {
         const diff = Math.abs(dist - r);
-        if (diff < 20 && diff < minDiff) {
+        if (diff < 24 && diff < minDiff) {
           minDiff = diff;
           nearest = id;
         }
@@ -132,7 +134,7 @@ export default function DraggableRings({
       const angle = getAngleFromCenter(clientX, clientY);
       const rawValue = (angle / 360) * 10;
       const clamped = Math.min(10, Math.max(0, rawValue));
-      const snapped = Math.round(clamped * 2) / 2; // 0.5 increments
+      const snapped = Math.round(clamped * 2) / 2;
       config.onChange(snapped);
     },
     [getRingConfig, getAngleFromCenter]
@@ -174,36 +176,24 @@ export default function DraggableRings({
     id: RingId,
     r: number,
     value: number,
-    color: string,
-    label: string
+    color: string
   ) => {
     const pct = value / 10;
     const endAngle = pct * 360;
     const isPulsing = pulsingRing === id;
     const arcPath = pct >= 0.999 ? fullCircle(CX, CY, r) : describeArc(CX, CY, r, 0, endAngle);
 
+    // Knob position: endpoint of the filled arc
+    const knob = pct < 0.001
+      ? { x: CX, y: CY - r } // at 12 o'clock when empty
+      : arcEndpoint(r, endAngle);
+
     return (
       <g key={id} data-ring={id}>
         {/* Track */}
-        <circle
-          cx={CX}
-          cy={CY}
-          r={r}
-          fill="none"
-          stroke={CREAM}
-          strokeWidth={STROKE}
-          opacity={0.35}
-        />
+        <circle cx={CX} cy={CY} r={r} fill="none" stroke={CREAM} strokeWidth={STROKE} opacity={0.35} />
         {/* Subtle track tint */}
-        <circle
-          cx={CX}
-          cy={CY}
-          r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth={STROKE}
-          opacity={0.12}
-        />
+        <circle cx={CX} cy={CY} r={r} fill="none" stroke={color} strokeWidth={STROKE} opacity={0.12} />
 
         {/* Fill arc */}
         {pct > 0.001 && (
@@ -225,6 +215,20 @@ export default function DraggableRings({
           />
         )}
 
+        {/* Knob handle — white circle at arc endpoint */}
+        <circle
+          cx={knob.x}
+          cy={knob.y}
+          r={8}
+          fill="white"
+          stroke={color}
+          strokeWidth={2}
+          style={{
+            filter: `drop-shadow(0 1px 3px rgba(0,0,0,0.18))`,
+            cursor: "grab",
+          }}
+        />
+
         {/* Hit area ring (invisible, wide) */}
         <circle
           cx={CX}
@@ -239,7 +243,6 @@ export default function DraggableRings({
     );
   };
 
-  // Label positions: top-right quadrant of each ring
   return (
     <div className="relative w-full flex flex-col items-center">
       <div className="relative w-full max-w-xs mx-auto">
@@ -253,14 +256,11 @@ export default function DraggableRings({
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
         >
-          {/* Outer ring: Fullness */}
-          {renderRing("fullness", OUTER_R, fullness, TEAL, "Fullness")}
-          {/* Middle ring: Energy */}
-          {renderRing("energy", MID_R, energy, PEACH, "Energy")}
-          {/* Inner ring: Hydration */}
-          {renderRing("hydration", INNER_R, hydration, BLUE, "Hydration")}
+          {renderRing("fullness", OUTER_R, fullness, TEAL)}
+          {renderRing("energy", MID_R, energy, PEACH)}
+          {renderRing("hydration", INNER_R, hydration, BLUE)}
 
-          {/* Logo center: teal fill rising behind logo */}
+          {/* Logo center: cream bg + fullness fill + logo */}
           <foreignObject x={CX - 40} y={CY - 40} width={80} height={80}>
             <div
               style={{
@@ -272,7 +272,6 @@ export default function DraggableRings({
                 background: CREAM,
               }}
             >
-              {/* Logo underneath */}
               <img
                 src="/logo.png"
                 alt="FeelFed"
@@ -284,7 +283,7 @@ export default function DraggableRings({
                   objectFit: "cover",
                 }}
               />
-              {/* Rising teal fill on top — multiply blend makes it visible through the opaque PNG */}
+              {/* Rising teal fill — multiply blend shows through the opaque PNG */}
               <div
                 style={{
                   position: "absolute",
@@ -301,59 +300,6 @@ export default function DraggableRings({
             </div>
           </foreignObject>
         </svg>
-
-        {/* HTML ring labels positioned absolutely around the SVG */}
-        {/* Fullness: outer ring - left */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: "50%",
-            left: "2%",
-            transform: "translateY(-50%)",
-            textAlign: "left",
-          }}
-        >
-          <div className="font-sans text-xs uppercase tracking-wider" style={{ color: DEEP_TEAL, opacity: 0.7 }}>
-            Fullness
-          </div>
-          <div className="font-serif text-lg font-semibold" style={{ color: TEAL, lineHeight: 1 }}>
-            {fullness}
-          </div>
-        </div>
-
-        {/* Energy: middle ring - right */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: "32%",
-            right: "2%",
-            textAlign: "right",
-          }}
-        >
-          <div className="font-sans text-xs uppercase tracking-wider" style={{ color: DEEP_TEAL, opacity: 0.7 }}>
-            Energy
-          </div>
-          <div className="font-serif text-lg font-semibold" style={{ color: PEACH, lineHeight: 1 }}>
-            {energy}
-          </div>
-        </div>
-
-        {/* Hydration: inner ring - right bottom */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: "62%",
-            right: "2%",
-            textAlign: "right",
-          }}
-        >
-          <div className="font-sans text-xs uppercase tracking-wider" style={{ color: DEEP_TEAL, opacity: 0.7 }}>
-            Hydration
-          </div>
-          <div className="font-serif text-lg font-semibold" style={{ color: BLUE, lineHeight: 1 }}>
-            {hydration}
-          </div>
-        </div>
       </div>
     </div>
   );
