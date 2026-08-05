@@ -304,7 +304,7 @@ export default function DraggableRings({
 
   return (
     <div className="relative w-full flex flex-col items-center">
-      <div className="relative w-full max-w-xs mx-auto">
+      <div className="relative w-full max-w-[300px] sm:max-w-sm md:max-w-md lg:max-w-none mx-auto">
         <svg
           ref={svgRef}
           viewBox="0 0 320 320"

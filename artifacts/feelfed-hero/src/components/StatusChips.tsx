@@ -47,7 +47,7 @@ function Chip({ id, color, label, phrase, isActive, activeColor }: ChipProps) {
         background: isActive ? "rgba(255,255,255,0.92)" : "rgba(251,247,242,0.85)",
         border: `1px solid ${borderColor}`,
         borderRadius: "0.75rem",
-        padding: "10px 12px",
+        padding: "8px 10px",
         display: "flex",
         flexDirection: "column",
         gap: 4,
