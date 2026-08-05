@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "FeelFed"
+description = "FeelFed hero screen — a single-screen immersive food and fullness journal. Three concentric draggable rings (fullness, energy, hydration) drive full-page ambient lighting and a typewriter reflection card. Cream bowl logo animates with fullness. Headline: 'Four bites is still data.'"
+version = "1.0.0"
+id = "artifacts/feelfed-hero"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23384
+
+[services.development]
+run = "pnpm --filter @workspace/feelfed-hero run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/feelfed-hero", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/feelfed-hero/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23384"
+BASE_PATH = "/"
