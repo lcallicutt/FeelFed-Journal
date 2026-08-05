@@ -1,0 +1,39 @@
+FeelFed Designathon — Hero Build Plan
+Creative direction: A digital mood ring for how your body feels after eating. One moment: You set your state. The environment responds. FeelFed speaks back.
+The 3-second rule
+A judge has to know what they control before they think about it. Four things do that work:
+"Drag a ring" sits directly above the dial with an animated down-arrow. Instruction, not decoration.
+Three visible knobs on three concentric rings. A knob is the universal "grab me" signal.
+A live legend under the ring, three cards, each with a color swatch matched to its ring and the current state in plain words. Color-to-ring mapping means you never have to guess which ring is which.
+A load animation that sweeps all three rings from zero to midpoint on arrival. The page demonstrates itself before anyone touches it.
+Nothing else moves on first load. The ring is the only interactive object on the page.
+The environment response
+Everything is a CSS custom property driven by the ring values, so the whole page reacts to one number changing.
+Energy (--energy)
+Low: cool, dim, desaturated. A dark teal wash creeps in from the lower left, contrast drops, the page feels like a room with the blinds down.
+High: warm light blooms from the upper right, a peach halo appears behind the center bowl, the seed in the logo brightens and grows, and slow warm motes drift upward. The reflection card's shadow deepens as if it's being lit from somewhere.
+Hydration (--hydration)
+Low: a warm sepia overlay plus a fine dry grain texture. Everything goes matte and slightly dusty.
+High: three large blurred prismatic caustics in cool blue, periwinkle, and mint drift slowly across the page in screen blend mode. Reads as light through water.
+These two layers cross-fade against each other, so a low-energy dehydrated state and a high-energy hydrated state look like genuinely different times of day.
+Fullness (--fullness)
+The bowl from the FeelFed logo sits at the center of the rings and fills as fullness rises. The logo is the interface. No other entry in that buildathon will have that, because it only works if the mark already means something.
+The voice
+You asked for compassionate and observant, never childish or cheerful. The states shipped:
+Fullness: Running on empty → Barely anything in → Room to spare → Softly satisfied → Easing in → Comfortably fed → Noticing it now → Getting close → Full and floating → Heavy but hopeful → Past the ceiling
+Energy: Flat out → Low battery → Low battery, still showing up → Slow start → Finding it → Steady → Steady and warm → Picking up → Charged → Charged and clear → Fully lit
+Hydration: Running dry → Barely a sip → Dry and dusty → Catching up → Sipping along → Topped up → Hydrated and glowing → Cool and clear
+One change to your hydration line
+"Are we giving desert or waterfall today?" is genuinely fun, and I understand why you like it. It's out, for one reason: it's a binary with a loser end. A user who couldn't drink much reads "desert" and gets a verdict, which is the exact experience FeelFed exists to remove. "Running dry" and "Dry and dusty" carry the same texture and imagery without scoring anyone. The poetry survives, the judgment doesn't.
+The reflection card
+Titled "FeelFed noticing." Not "AI insight," not a chat bubble, no avatar.
+How it behaves: slider stops → a light sheen sweeps across the card as if it's thinking → the title types out character by character with a blinking caret → the body fades in underneath. Roughly 900ms end to end. It reads as considered rather than instant, which is the difference between "thoughtful" and "chatbot."
+What it says: ten states keyed off the combination of all three rings, so it genuinely responds to the whole picture rather than one number. Examples:
+Your body is asking for gentleness. Fullness is high while energy sits low. That is a real combination, and it is written down now. Nothing here needs fixing today.
+Low battery, still showing up. Not much in, not much left over. Opening this on a day like today counts as the entry.
+Nourished and charged. Comfortable fullness, strong hydration, energy on the rise. This is the shape of a good day, and now it has a record.
+Every card is footed with: "Recorded as you reported it. FeelFed never guesses why."
+One change to your example copy
+Your sample said "Hydration and a short, easy walk may feel better than adding more food right now." That's a recommendation about eating and exercise, and your own spec lists "recommends whether someone should exercise" and "creates a medically appropriate diet" as language to avoid. The version shipped keeps the warmth and the sense of being understood, but stays on the observation side of that line. It's also the stronger entry: every other project in that room will have an AI telling users what to do. Almost none will have the confidence to say "we deliberately don't."
+What is deliberately not on the page
+No feature cards. No charts. No food imagery. No nav panel beyond the logo and one button. No scroll indicator. No stats row. The hero is one object and one sentence.
