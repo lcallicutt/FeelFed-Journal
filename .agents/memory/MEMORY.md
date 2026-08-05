@@ -1,1 +1,2 @@
 - [FeelFed project overview](feelfed-overview.md) — design system + hero screen architecture, key decisions, asset paths
+- [Artifact registration for pre-built dirs](artifact-registration.md) — if a subagent builds artifact files first, register via createArtifact then overlay; verifyAndReplaceArtifactToml can't create new artifacts

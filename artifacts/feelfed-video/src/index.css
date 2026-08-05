@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+/* FeelFed brand palette + typography (from @workspace/feelfed-ds tokens) */
+:root {
+  --color-cream: #fbf7f2;
+  --color-cream-deep: #f3ebe0;
+  --color-teal: #3a8f88;
+  --color-teal-deep: #1f4e49;
+  --color-peach: #f0a576;
+  --color-peach-soft: #f6c6a1;
+  --color-water: #5fa8c4;
+  --color-ink: #2c3d3a;
+
+  --font-display: 'Fraunces', serif;
+  --font-ui: 'Poppins', sans-serif;
+  --font-body: 'Lato', sans-serif;
+}
+
+@theme inline {
+  --color-cream: var(--color-cream);
+  --color-cream-deep: var(--color-cream-deep);
+  --color-teal: var(--color-teal);
+  --color-teal-deep: var(--color-teal-deep);
+  --color-peach: var(--color-peach);
+  --color-peach-soft: var(--color-peach-soft);
+  --color-water: var(--color-water);
+  --color-ink: var(--color-ink);
+  --font-display: var(--font-display);
+  --font-ui: var(--font-ui);
+  --font-body: var(--font-body);
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--color-cream);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle grain overlay used across scenes for warmth */
+.ff-grain {
+  background-image: radial-gradient(
+    rgba(31, 78, 73, 0.04) 0.5px,
+    transparent 0.5px
+  );
+  background-size: 4px 4px;
+}

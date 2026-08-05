@@ -1,0 +1,28 @@
+kind = "video"
+previewPath = "/feelfed-video/"
+title = "FeelFed — Feed the data. Honor the feeling."
+description = "A ~40s gentle animated brand story for FeelFed, a food and fullness journal. Cream-to-peach palette, Fraunces headlines. The fullness rings expand around a bowl, four bites become teal data dots, journal entries surface inside the rings, and the piece closes on the FeelFed logo and tagline. Vertical 9:16 composition."
+version = "1.0.0"
+id = "artifacts/feelfed-video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/feelfed-video/" ]
+localPort = 24764
+
+[services.development]
+run = "pnpm --filter @workspace/feelfed-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/feelfed-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/feelfed-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24764"
+BASE_PATH = "/feelfed-video/"

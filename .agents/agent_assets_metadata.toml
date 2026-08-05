@@ -1,0 +1,9 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "jGDISFtACufO1gFTXI9mM"
+uri = "file://artifacts/feelfed-video/public/audio/bg_music.mp3"
+type = "audio"
+title = "background music"
+description = "Generated music: Warm ambient lo-fi instrumental background music scoring a gentle wellness brand video about a food and fullness journal. Soft felt piano, warm pads, light hand percussion, subtle vi…"
