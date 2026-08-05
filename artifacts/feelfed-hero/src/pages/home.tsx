@@ -118,19 +118,30 @@ export default function Home() {
         className="relative w-full max-w-lg mx-auto px-6 pt-10 pb-12 flex flex-col gap-0"
         style={{ zIndex: 2 }}
       >
-        {/* Eyebrow */}
-        <div style={layerStyle(0)}>
+        {/* Logo + wordmark */}
+        <div style={{ ...layerStyle(0), display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+          <img
+            src="/logo.png"
+            alt="FeelFed"
+            style={{ height: 36, width: 36, objectFit: "cover", borderRadius: "50%" }}
+          />
+          <span
+            className="font-serif"
+            style={{ fontSize: 20, fontWeight: 600, color: DEEP_TEAL, letterSpacing: "-0.01em" }}
+          >
+            FeelFed
+          </span>
           <span
             className="font-sans"
             style={{
-              fontSize: 10,
-              letterSpacing: "0.18em",
+              fontSize: 9,
+              letterSpacing: "0.16em",
               textTransform: "uppercase",
               color: TEAL,
-              opacity: 0.75,
-              fontVariant: "small-caps",
-              display: "block",
-              marginBottom: 14,
+              opacity: 0.65,
+              marginLeft: 4,
+              alignSelf: "flex-end",
+              paddingBottom: 3,
             }}
           >
             Coming soon to iOS
@@ -153,7 +164,7 @@ export default function Home() {
             Four bites is{" "}
             <br />
             still{" "}
-            <em style={{ fontStyle: "italic" }}>data.</em>
+            <em style={{ fontStyle: "italic", color: "#F0A576" }}>data.</em>
           </h1>
         </div>
 

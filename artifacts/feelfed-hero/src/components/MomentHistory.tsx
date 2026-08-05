@@ -1,5 +1,4 @@
-import { useGetMoments } from "@workspace/api-client-react";
-import type { MomentRecord } from "@workspace/api-client-react";
+import { useGetMoments, type MomentRecord } from "@workspace/api-client-react";
 
 interface MomentHistoryProps {
   deviceId: string;
@@ -136,7 +135,7 @@ export default function MomentHistory({ deviceId }: MomentHistoryProps) {
         )}
         {moments.length > 0 && (
           <div className="px-4 max-h-80 overflow-y-auto">
-            {moments.map((m) => (
+            {moments.map((m: MomentRecord) => (
               <MomentRow key={m.id} moment={m} />
             ))}
           </div>
