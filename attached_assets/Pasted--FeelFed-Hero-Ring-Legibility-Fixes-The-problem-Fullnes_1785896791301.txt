@@ -1,0 +1,80 @@
+# FeelFed Hero — Ring Legibility Fixes
+
+## The problem
+
+Fullness has a payoff you can see: the bowl fills. Energy and hydration only affect the page background, which is (a) too far from the ring to connect as cause and effect, and (b) invisible in a screenshot, a screen recording crop, or a judge's quick glance. Three rings that look identical and behave identically read as decoration.
+
+**Fix principle: every ring needs a local payoff inside the ring stack, not just a page-wide one.** The background atmosphere stays, but it becomes the bonus, not the only tell.
+
+---
+
+## What changed
+
+### 1. Each ring now changes color as it moves, not just length
+
+This is the single biggest fix. Length alone is ambiguous. Color intensity is instantly readable.
+
+| Ring | At 0 | At 10 |
+|---|---|---|
+| Fullness | pale mint `#BBD8D4` | deep teal `#26706A` |
+| Energy | dull grey-green `#A3ADAB` | bright amber `#FF9E52` |
+| Hydration | dry tan `#C4A483` | water blue `#3FA9D4` |
+
+A dehydrated ring is literally the color of dust. A charged energy ring is literally the color of light. Nobody needs a legend to read that.
+
+### 2. Rings thicken as they rise
+
+Stroke goes from 13px to 19px across the range. Adds physical weight to a high value.
+
+### 3. Energy gets a glow and rays
+
+The energy arc has a blurred aura underneath it that grows quadratically with the value, so high energy visibly *emits*. Above 50%, twelve short rays appear around the outside of the ring stack and extend further as energy climbs. Low energy has no glow at all, so the difference reads as lit versus unlit.
+
+### 4. Hydration is now visible inside the bowl
+
+The bowl's contents were a flat rectangle. Now:
+- The water has an **animated wave surface**. Amplitude and speed both scale with hydration, so at low hydration it sits flat and dead, and at high hydration it moves.
+- The water **color shifts** from muddy brown `#9C7B54` at dry to bright aqua `#3FB2CE` at hydrated.
+- Above 35% hydration, small **bubbles rise** through the water.
+- The dish behind the bowl brightens as hydration rises.
+
+So the center of the ring is now showing you two variables at once: how much is in the bowl (fullness) and what condition it's in (hydration). Energy lights the whole scene from behind.
+
+### 5. A value label appears at the knob while you drag
+
+Drag any ring and a dark tooltip pops up right at the knob showing the state word ("Barely a sip," "Charged and clear"). It fades after 1.4 seconds. This is the direct cause-and-effect confirmation that was missing. Your eye never has to leave the ring to find out what you changed.
+
+### 6. The legend card lights up for the ring you're touching
+
+Hover, drag, or keyboard-focus a ring and its legend card lifts, brightens, and takes on that ring's live color. Ring-to-label mapping becomes unmissable.
+
+### 7. Staggered load-in
+
+The three rings now sweep in one at a time, 280ms apart, instead of all together. Each one demonstrates its own effect in sequence before the user touches anything.
+
+---
+
+## The bug in the current Replit build
+
+In the screenshot the reflection card reads *"Everything at zero"* while the legend shows Softly satisfied / Slow start / Barely a sip, and the bowl looks partly full. The reflection state is not re-evaluating against the current ring values, it's stuck on the initial state.
+
+Cause: the reflection is almost certainly firing once on mount rather than on every value change, or the title-change guard is comparing against a stale variable. In the version attached, `render()` recomputes `reflection(f,e,h)` on every single value change and only re-types when the resulting title actually differs.
+
+Also worth noting: the center bowl in the screenshot has rendered as a blue-grey blob and lost the leaves and the peach seed. The logo is the emotional payoff of that whole widget, so it has to stay legible. In the attached file the center is drawn at a larger scale with the leaves, the seed, and the bowl outline all preserved above the water.
+
+---
+
+## Prompt for Replit
+
+> Update the hero rings so each one has a visible local effect, not just a background effect.
+>
+> 1. Each ring's stroke color interpolates with its value: fullness pale mint #BBD8D4 to deep teal #26706A, energy dull grey #A3ADAB to amber #FF9E52, hydration tan #C4A483 to blue #3FA9D4. Stroke width goes 13px to 19px across the range.
+> 2. Energy: add a blurred duplicate arc beneath the value arc whose opacity is value squared, so high energy glows. Above 50%, fade in 12 short radial rays around the outside of the ring stack that extend further as energy rises.
+> 3. Hydration: the water inside the center bowl gets an animated sine-wave surface whose amplitude and speed scale with hydration. Water color interpolates from #9C7B54 (dry) to #3FB2CE (hydrated). Above 35%, small bubbles rise through it.
+> 4. While dragging any ring, show a dark tooltip pill at the knob position with that ring's current state word. Fade it out 1.4s after the drag stops.
+> 5. When a ring is hovered, dragged, or keyboard-focused, its legend card lifts 3px, brightens, and its border takes that ring's live color.
+> 6. Stagger the load-in animation: rings sweep from 0 to 0.55 one at a time, 280ms apart.
+> 7. Fix the reflection card: recompute the reflection from all three current values on every change, and re-run the typing animation only when the resulting title differs from the last one.
+> 8. Keep the center bowl logo legible: leaves, peach seed, and bowl outline must stay visible above the water fill.
+
+Attached `FeelFed-Hero.html` is the working reference implementation. Paste it in whole, or hand Replit the prompt above and use the file to check against.
