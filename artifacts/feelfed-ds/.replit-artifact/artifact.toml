@@ -1,0 +1,19 @@
+kind = "design-system"
+previewPath = "/feelfed-ds/"
+title = "FeelFed Design System"
+description = "Design system for FeelFed — a gentle food and fullness journal. Establishes the visual language (tokens, component library, style-guide preview) shared across all FeelFed product surfaces. Palette: cream, teal, deep teal, peach, water blue. Typography: Fraunces display, Poppins labels, Lato body."
+version = "1.0.0"
+id = "artifacts/feelfed-ds"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/feelfed-ds/" ]
+localPort = 19199
+
+[services.development]
+run = "pnpm --filter @workspace/feelfed-ds run dev"
+
+[services.env]
+PORT = "19199"
+BASE_PATH = "/feelfed-ds/"
