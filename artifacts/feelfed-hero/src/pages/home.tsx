@@ -7,6 +7,7 @@ import ReflectionCard from "@/components/ReflectionCard";
 import StatusChips from "@/components/StatusChips";
 import MomentHistory from "@/components/MomentHistory";
 import WaitlistModal from "@/components/WaitlistModal";
+import TrustBadges from "@/components/TrustBadges";
 import { useGetMoments } from "@workspace/api-client-react";
 import { getDeviceId } from "@/lib/deviceId";
 
@@ -270,6 +271,11 @@ export default function Home() {
               style={{ color: DEEP_TEAL, opacity: 0.5 }}>
               See a sample doctor summary
             </a>
+          </div>
+
+          {/* Trust badges */}
+          <div style={{ ...fade(260), marginTop: 24 }}>
+            <TrustBadges />
           </div>
 
           {/* On mobile the interactive panel comes here (below CTA) */}
