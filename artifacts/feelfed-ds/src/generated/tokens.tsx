@@ -36,7 +36,11 @@ export const tokens = {
       "sidebarPrimaryForeground": "#FBF7F2",
       "sidebarAccent": "#F0A576",
       "sidebarAccentForeground": "#1F4E49",
-      "sidebarRing": "#3A8F88"
+      "sidebarRing": "#3A8F88",
+      "ringFullness": "#26706A",
+      "ringEnergy": "#FF9E52",
+      "ringHydration": "#3FA9D4",
+      "water": "#3FB2CE"
     },
     "dark": {
       "background": "#0E2422",
@@ -70,7 +74,11 @@ export const tokens = {
       "sidebarPrimaryForeground": "#0E2422",
       "sidebarAccent": "#244F4B",
       "sidebarAccentForeground": "#FBF7F2",
-      "sidebarRing": "#48ADA6"
+      "sidebarRing": "#48ADA6",
+      "ringFullness": "#48ADA6",
+      "ringEnergy": "#FF9E52",
+      "ringHydration": "#3FA9D4",
+      "water": "#3FB2CE"
     }
   },
   "fontFamily": {
