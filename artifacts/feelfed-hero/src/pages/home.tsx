@@ -4,6 +4,9 @@ import MoteCanvas from "@/components/MoteCanvas";
 import AmbientLayer from "@/components/AmbientLayer";
 import ReflectionCard from "@/components/ReflectionCard";
 import StatusChips from "@/components/StatusChips";
+import MomentHistory from "@/components/MomentHistory";
+import { useGetMoments } from "@workspace/api-client-react";
+import { getDeviceId } from "@/lib/deviceId";
 
 const DEEP_TEAL = "#1F4E49";
 const TEAL = "#3A8F88";
@@ -14,7 +17,26 @@ export default function Home() {
   const [hydration, setHydration] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [arrowBounce, setArrowBounce] = useState(false);
+  const [deviceId] = useState(() => getDeviceId());
+  const [prefilled, setPrefilled] = useState(false);
   const sweepDone = useRef(false);
+
+  // Load most recent moment to prefill rings on first load
+  const { data: momentsData } = useGetMoments({ deviceId, limit: 1 });
+
+  // Pre-fill rings from most recent saved moment (once, on first load)
+  // If we prefill, skip the sweep animation
+  useEffect(() => {
+    if (prefilled) return;
+    const latest = momentsData?.moments?.[0];
+    if (latest) {
+      setFullness(latest.fullness);
+      setEnergy(latest.energy);
+      setHydration(latest.hydration);
+      setPrefilled(true);
+      sweepDone.current = true; // prevent sweep from running
+    }
+  }, [momentsData, prefilled]);
 
   // Sync CSS custom properties
   useEffect(() => {
@@ -30,15 +52,12 @@ export default function Home() {
     if (!sweepDone.current) {
       sweepDone.current = true;
 
-      // Sweep all three rings from 0 to 5 using smooth rAF interpolation
-      const DURATION = 700; // ms per ring
+      const DURATION = 700;
+      const STAGGER = 80;
       const start = performance.now();
-
-      const STAGGER = 80; // ms between rings starting
 
       const animate = (now: number) => {
         const elapsed = now - start;
-
         const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
         const fProgress = Math.min(1, elapsed / DURATION);
@@ -54,7 +73,6 @@ export default function Home() {
         }
       };
 
-      // Start sweep shortly after mount
       const tSweep = setTimeout(() => requestAnimationFrame(animate), 300);
       return () => {
         clearTimeout(tMount);
@@ -164,13 +182,7 @@ export default function Home() {
 
         {/* DRAG A RING prompt */}
         <div style={{ ...layerStyle(240), marginBottom: 8 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span
               className="font-sans"
               style={{
@@ -219,6 +231,11 @@ export default function Home() {
         {/* Reflection card */}
         <div style={{ ...layerStyle(480), marginTop: 16, width: "100%" }}>
           <ReflectionCard fullness={fullness} energy={energy} hydration={hydration} />
+        </div>
+
+        {/* Moment history */}
+        <div style={{ ...layerStyle(560), marginTop: 24, width: "100%" }}>
+          <MomentHistory deviceId={deviceId} />
         </div>
       </div>
     </div>

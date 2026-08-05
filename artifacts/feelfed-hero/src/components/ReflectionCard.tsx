@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { Button } from "@workspace/feelfed-ds/components/ui/button";
+import { useSaveMoment } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { getGetMomentsQueryKey } from "@workspace/api-client-react";
+import { getDeviceId } from "@/lib/deviceId";
 
 const TEAL = "#3A8F88";
 const DEEP_TEAL = "#1F4E49";
@@ -40,11 +45,25 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
   const [displayedText, setDisplayedText] = useState("");
   const [bodyVisible, setBodyVisible] = useState(false);
   const [sheen, setSheen] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const typewriterRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const charIndexRef = useRef(0);
   const isFirstMount = useRef(true);
+
+  const queryClient = useQueryClient();
+  const { mutate: saveMoment, isPending } = useSaveMoment({
+    mutation: {
+      onSuccess: () => {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+        queryClient.invalidateQueries({
+          queryKey: getGetMomentsQueryKey({ deviceId: getDeviceId() }),
+        });
+      },
+    },
+  });
 
   const targetText = useMemo(() => {
     const f = band(fullness);
@@ -58,17 +77,16 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
   targetTextRef.current = targetText;
 
   const startSequence = (text: string) => {
-    // Cancel any in-flight typewriter
     if (typewriterRef.current) clearTimeout(typewriterRef.current);
     charIndexRef.current = 0;
     setDisplayedText("");
     setBodyVisible(false);
 
-    // 1. Sheen sweep (200ms)
+    // 1. Sheen sweep (350ms)
     setSheen(true);
     const sheenOff = setTimeout(() => setSheen(false), 350);
 
-    // 2. Start typewriter after sheen (200ms delay)
+    // 2. Start typewriter after sheen
     const startType = setTimeout(() => {
       const type = () => {
         charIndexRef.current += 1;
@@ -77,7 +95,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
         if (charIndexRef.current < text.length) {
           typewriterRef.current = setTimeout(type, 32);
         } else {
-          // 3. Body (extra info) fades in after typing completes
+          // 3. Footer fades in after typing completes
           setTimeout(() => setBodyVisible(true), 80);
         }
       };
@@ -92,7 +110,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
 
   // Debounce ring changes
   useEffect(() => {
-    if (isFirstMount.current) return; // handled by mount effect
+    if (isFirstMount.current) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       startSequence(targetTextRef.current);
@@ -100,7 +118,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetText]);
 
   // Start on mount
@@ -114,6 +132,18 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleSave = useCallback(() => {
+    saveMoment({
+      data: {
+        deviceId: getDeviceId(),
+        fullness,
+        energy,
+        hydration,
+        reflection: targetText,
+      },
+    });
+  }, [saveMoment, fullness, energy, hydration, targetText]);
 
   return (
     <div
@@ -146,14 +176,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
       />
 
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          marginBottom: 12,
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
         <span style={{ color: TEAL, fontSize: 8 }}>●</span>
         <span
           className="font-sans"
@@ -170,7 +193,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
         </span>
       </div>
 
-      {/* Typewriter text — italic Fraunces */}
+      {/* Typewriter text — italic serif */}
       <p
         className="font-serif"
         style={{
@@ -196,22 +219,40 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
         />
       </p>
 
-      {/* Footer — always rendered but fades in after typing */}
-      <p
-        className="font-mono"
+      {/* Footer row — disclaimer + save button */}
+      <div
         style={{
-          fontStyle: "italic",
-          fontSize: 11,
-          color: DEEP_TEAL,
-          opacity: bodyVisible ? 0.45 : 0,
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 12,
           marginTop: 14,
-          marginBottom: 0,
+          opacity: bodyVisible ? 1 : 0,
           transition: "opacity 0.6s ease",
-          lineHeight: 1.4,
         }}
       >
-        Recorded as you reported it. FeelFed never guesses why.
-      </p>
+        <p
+          className="font-mono"
+          style={{
+            fontStyle: "italic",
+            fontSize: 11,
+            color: DEEP_TEAL,
+            opacity: 0.45,
+            margin: 0,
+            lineHeight: 1.4,
+          }}
+        >
+          Recorded as you reported it. FeelFed never guesses why.
+        </p>
+        <Button
+          size="sm"
+          onClick={handleSave}
+          disabled={isPending || saved}
+          style={{ flexShrink: 0, fontSize: 11 }}
+        >
+          {saved ? "Saved ✓" : isPending ? "Saving…" : "Save moment"}
+        </Button>
+      </div>
 
       {/* Caret blink keyframe */}
       <style>{`
