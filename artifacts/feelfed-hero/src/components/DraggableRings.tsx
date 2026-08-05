@@ -176,9 +176,9 @@ export default function DraggableRings({
       // Water level in viewport space (top of bowl = vpY(176), bottom = vpY(244))
       const yRef = 244 - 68 * f;                     // water level in reference space
       const yVp  = vpY(yRef);                         // water level in viewport space
-      const ampVp = (1 + h * 5.5) * BOWL_SCALE;      // wave amplitude (viewport px)
+      const ampVp = (1.6 + h * 8) * BOWL_SCALE;      // wave amplitude (viewport px)
 
-      phaseRef.current += 0.03 + h * 0.05;
+      phaseRef.current += 0.035 + h * 0.085;
       const p   = phaseRef.current;
       const oVp = Math.sin(p) * 6 * BOWL_SCALE;      // wave horizontal offset
 
@@ -192,7 +192,9 @@ export default function DraggableRings({
           ` T${t(vpX(320))} ${t(yVp + Math.sin(p + 1) * ampVp)}` +
           ` L${t(vpX(320))} ${t(vpY(260))} L${t(vpX(120))} ${t(vpY(260))} Z`
         );
-        water.setAttribute("fill", mixColors("#9C7B54", "#3FB2CE", h));
+        // Water stays in the teal family at every hydration level:
+        // muted pale teal when dry → bright aqua when topped up (never brown/tan)
+        water.setAttribute("fill", mixColors("#7FB0AA", "#3FB2CE", h));
         water.setAttribute("opacity", (0.6 + h * 0.3).toFixed(2));
       }
 

@@ -146,7 +146,7 @@ export default function Home() {
       {/* Fixed ambient layers */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
         <AmbientLayer energy={energy} hydration={hydration} />
-        <MoteCanvas energy={energy} />
+        <MoteCanvas fullness={fullness} energy={energy} hydration={hydration} />
       </div>
 
       {/* ── Page shell ─────────────────────────────────────────────────────── */}

@@ -20,9 +20,9 @@ export default function AmbientLayer({ energy, hydration }: AmbientLayerProps) {
   // Dry grain: kicks in below 0.5 hydration
   const grainOpacity = Math.max(0, (0.5 - hydNorm) * 0.36);
 
-  // Water drops: fade in above hydration 3 (0.3), grow with hydration
-  // At hydration 3 → 0 opacity, hydration 10 → full opacity
-  const dropProgress = Math.max(0, (hydNorm - 0.3) / 0.7); // 0→1 from hyd 3 to 10
+  // Water drops: fade in above hydration 1.5 (0.15), grow with hydration
+  // Earlier onset + steeper curve so hydration movement is clearly visible
+  const dropProgress = Math.max(0, (hydNorm - 0.15) / 0.85); // 0→1 from hyd 1.5 to 10
 
   return (
     <>
@@ -42,8 +42,8 @@ export default function AmbientLayer({ energy, hydration }: AmbientLayerProps) {
       {/* Hydration: large blurred water-drop blobs */}
       {WATER_DROPS.map((drop, i) => {
         // Each drop grows in size and opacity with hydration
-        const size = drop.baseSize * (0.5 + 0.65 * dropProgress);
-        const opacity = dropProgress * 0.22 * (i % 2 === 0 ? 1 : 0.75);
+        const size = drop.baseSize * (0.45 + 0.85 * dropProgress);
+        const opacity = dropProgress * 0.34 * (i % 2 === 0 ? 1 : 0.75);
         return (
           <div
             key={i}
@@ -75,7 +75,7 @@ export default function AmbientLayer({ energy, hydration }: AmbientLayerProps) {
           zIndex: 0,
           background:
             "conic-gradient(from 0deg at 40% 30%, #5FA8C4 0%, #3A8F88 30%, transparent 50%, #5FA8C4 70%, transparent 100%)",
-          opacity: Math.max(0, hydNorm * 2 - 1.4) * 0.1,
+          opacity: Math.max(0, hydNorm * 2 - 1.0) * 0.14,
           transition: "opacity 0.8s ease",
           animation: "causticRotate 12s linear infinite",
           pointerEvents: "none",
