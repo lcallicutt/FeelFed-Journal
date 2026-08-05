@@ -16,13 +16,16 @@ interface DraggableRingsProps {
 const CX = 160;
 const CY = 160;
 const OUTER_R = 138;
-const MID_R = 103;
+const MID_R   = 103;
 const INNER_R = 68;
-const CREAM = "#FBF7F2";
+const CREAM   = "#FBF7F2";
 
-// Bowl is drawn in reference-space (center 200,200) then scaled to fit INNER_R
+// Bowl is drawn in reference-space (center 200,200) then scaled to fit INNER_R.
+// VP helpers convert reference-space coordinates → SVG viewport coordinates.
 const BOWL_SCALE = INNER_R / 110;        // ≈ 0.618
 const BOWL_T = `translate(${CX} ${CY}) scale(${BOWL_SCALE}) translate(-200 -200)`;
+const vpX = (rx: number) => CX + (rx - 200) * BOWL_SCALE;
+const vpY = (ry: number) => CY + (ry - 200) * BOWL_SCALE;
 
 // ─── ring visual config ───────────────────────────────────────────────────────
 const RING_CFG: Record<RingId, { r: number; lo: string; hi: string; track: string }> = {
@@ -31,7 +34,7 @@ const RING_CFG: Record<RingId, { r: number; lo: string; hi: string; track: strin
   hydration: { r: INNER_R, lo: "#C4A483", hi: "#3FA9D4", track: "rgba(95,168,196,.20)"  },
 };
 
-// ─── phrase lookup (matches StatusChips) ─────────────────────────────────────
+// ─── phrase lookup ────────────────────────────────────────────────────────────
 const F_PHRASES = [
   "Running on empty","Barely anything in","Room to spare","Softly satisfied","Easing in",
   "Comfortably fed","Noticing it now","Getting close","Full and floating","Heavy but hopeful","Past the ceiling",
@@ -78,6 +81,18 @@ function knobXY(r: number, valueDeg: number): { x: number; y: number } {
   return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
 }
 
+// ─── bowl clip path — in SVG VIEWPORT coordinates (160,160 centre) ────────────
+// Derived by applying BOWL_T to the reference-space bowl path:
+//   M148 176 L252 176 C252 228 231 244 200 244 C169 244 148 228 148 176 Z
+// so browsers clip correctly regardless of which coordinate system they use.
+const BOWL_CLIP_D = [
+  `M${vpX(148).toFixed(2)} ${vpY(176).toFixed(2)}`,
+  `L${vpX(252).toFixed(2)} ${vpY(176).toFixed(2)}`,
+  `C${vpX(252).toFixed(2)} ${vpY(228).toFixed(2)} ${vpX(231).toFixed(2)} ${vpY(244).toFixed(2)} ${vpX(200).toFixed(2)} ${vpY(244).toFixed(2)}`,
+  `C${vpX(169).toFixed(2)} ${vpY(244).toFixed(2)} ${vpX(148).toFixed(2)} ${vpY(228).toFixed(2)} ${vpX(148).toFixed(2)} ${vpY(176).toFixed(2)}`,
+  `Z`,
+].join(" ");
+
 // ─── component ────────────────────────────────────────────────────────────────
 export default function DraggableRings({
   fullness, energy, hydration,
@@ -95,12 +110,15 @@ export default function DraggableRings({
   const phaseRef      = useRef(0);
   const rafRef        = useRef(0);
   const valRef        = useRef({ f: fullness / 10, e: energy / 10, h: hydration / 10 });
-  const bubDataRef    = useRef(
+
+  // Bubble data stored in viewport coordinates so the RAF loop needs no conversion.
+  const bubDataRef = useRef(
     Array.from({ length: 7 }, () => ({
-      x: 162 + Math.random() * 76,
+      // x: spread within bowl width in viewport space
+      x:  CX + (-38 + Math.random() * 76) * BOWL_SCALE,
       ph: Math.random(),
       sp: 0.12 + Math.random() * 0.22,
-      r: 1.6 + Math.random() * 2.4,
+      r:  (1.6 + Math.random() * 2.4) * BOWL_SCALE,   // radius scaled to viewport
     }))
   );
 
@@ -113,11 +131,12 @@ export default function DraggableRings({
   // Keep val ref current on every render
   valRef.current = { f: fullness / 10, e: energy / 10, h: hydration / 10 };
 
-  // ── live colors ─────────────────────────────────────────────────────────────
+  // ── live colors ──────────────────────────────────────────────────────────────
   const fColor = mixColors("#BBD8D4", "#26706A", fullness / 10);
   const eColor = mixColors("#A3ADAB", "#FF9E52", energy / 10);
   const hColor = mixColors("#C4A483", "#3FA9D4", hydration / 10);
   const liveColor = (ring: RingId) => ring === "fullness" ? fColor : ring === "energy" ? eColor : hColor;
+  void liveColor; // used externally via mixColors
 
   // ── active ring management ───────────────────────────────────────────────────
   const setActive = useCallback((ring: RingId | null) => {
@@ -127,41 +146,47 @@ export default function DraggableRings({
     onActiveChange?.(ring);
   }, [onActiveChange]);
 
-  // ── water + bubble rAF loop ──────────────────────────────────────────────────
+  // ── water + bubble rAF loop — all positions in SVG VIEWPORT coordinates ──────
   useEffect(() => {
     const tick = () => {
       const { f, h } = valRef.current;
+
+      // Water level in viewport space (top of bowl = vpY(176), bottom = vpY(244))
+      const yRef = 244 - 68 * f;                     // water level in reference space
+      const yVp  = vpY(yRef);                         // water level in viewport space
+      const ampVp = (1 + h * 5.5) * BOWL_SCALE;      // wave amplitude (viewport px)
+
+      phaseRef.current += 0.03 + h * 0.05;
+      const p   = phaseRef.current;
+      const oVp = Math.sin(p) * 6 * BOWL_SCALE;      // wave horizontal offset
+
       const water = waterRef.current;
       if (water) {
-        const top = 176, bot = 244;
-        const y = bot - (bot - top) * f;
-        const amp = 1 + h * 5.5;
-        phaseRef.current += 0.03 + h * 0.05;
-        const p = phaseRef.current;
-        const o = Math.sin(p) * 6;
+        const t = (v: number) => v.toFixed(2);
         water.setAttribute("d",
-          `M120 ${+(y + Math.sin(p) * amp).toFixed(2)}` +
-          ` Q ${+(145 + o).toFixed(2)} ${+(y - amp * 1.6).toFixed(2)} 170 ${+y.toFixed(2)}` +
-          ` T 220 ${+y.toFixed(2)} T 270 ${+y.toFixed(2)}` +
-          ` T 320 ${+(y + Math.sin(p + 1) * amp).toFixed(2)}` +
-          ` L 320 260 L 120 260 Z`
+          `M${t(vpX(120))} ${t(yVp + Math.sin(p) * ampVp)}` +
+          ` Q${t(vpX(145) + oVp)} ${t(yVp - ampVp * 1.6)} ${t(vpX(170))} ${t(yVp)}` +
+          ` T${t(vpX(220))} ${t(yVp)} T${t(vpX(270))} ${t(yVp)}` +
+          ` T${t(vpX(320))} ${t(yVp + Math.sin(p + 1) * ampVp)}` +
+          ` L${t(vpX(320))} ${t(vpY(260))} L${t(vpX(120))} ${t(vpY(260))} Z`
         );
         water.setAttribute("fill", mixColors("#9C7B54", "#3FB2CE", h));
         water.setAttribute("opacity", (0.6 + h * 0.3).toFixed(2));
       }
+
+      // Bubbles — rise from bowl bottom (vpY(244)) to just below water level
       bubElemsRef.current.forEach((el, i) => {
         if (!el) return;
-        const { f, h } = valRef.current;
-        const top = 176, bot = 244;
-        const y = bot - (bot - top) * f;
         const b = bubDataRef.current[i];
         b.ph += b.sp * 0.012 * (0.3 + h);
         if (b.ph > 1) b.ph = 0;
-        const by = bot - (bot - y - 4) * b.ph;
-        el.setAttribute("cx", String(b.x));
-        el.setAttribute("cy", String(by));
+        // by: bowl bottom at ph=0 → water level+4px at ph=1
+        const byRef = 244 - (244 - yRef - 4) * b.ph;
+        el.setAttribute("cx", String(b.x.toFixed(2)));
+        el.setAttribute("cy", String(vpY(byRef).toFixed(2)));
         el.setAttribute("opacity", (Math.max(0, h - 0.35) * 1.4 * (1 - b.ph)).toFixed(3));
       });
+
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
@@ -195,10 +220,6 @@ export default function DraggableRings({
     }
     return nearest;
   }, []);
-
-  const valueForRing = useCallback((ring: RingId) =>
-    ring === "fullness" ? fullness : ring === "energy" ? energy : hydration,
-  [fullness, energy, hydration]);
 
   const showTip = useCallback((ring: RingId, val: number) => {
     const { r } = RING_CFG[ring];
@@ -252,13 +273,13 @@ export default function DraggableRings({
     if (!draggingRef.current) setActive(null);
   }, [setActive]);
 
-  // ── derived render values ─────────────────────────────────────────────────────
-  const ePct = energy / 10;
-  const hPct = hydration / 10;
-  const eOn  = Math.max(0, (ePct - 0.5) * 2);        // 0→1 from energy 5→10
+  // ── derived render values ────────────────────────────────────────────────────
+  const ePct  = energy / 10;
+  const hPct  = hydration / 10;
+  const eOn   = Math.max(0, (ePct - 0.5) * 2);
   const haloR = Math.round(INNER_R * 0.87);
 
-  // ── ring renderer ─────────────────────────────────────────────────────────────
+  // ── ring renderer ────────────────────────────────────────────────────────────
   function renderRing(id: RingId, val: number, color: string) {
     const { r, track } = RING_CFG[id];
     const pct  = val / 10;
@@ -272,34 +293,24 @@ export default function DraggableRings({
 
     return (
       <g key={id} data-ring={id}>
-        {/* Track */}
         <circle cx={CX} cy={CY} r={r} fill="none" stroke={track} strokeWidth={16} />
-
-        {/* Aura (blurred) */}
         {arcD && auraOpacity > 0.02 && (
           <path d={arcD} fill="none" stroke={color} strokeWidth={sw + 7}
             strokeLinecap="round" opacity={auraOpacity} filter="url(#ring-glow)" />
         )}
-
-        {/* Value arc */}
         {arcD && (
           <path d={arcD} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round"
             style={{ transition: "stroke 300ms ease, stroke-width 240ms ease" }} />
         )}
-
-        {/* Knob */}
         <circle cx={knob.x} cy={knob.y} r={9} fill={CREAM} stroke={color} strokeWidth={2.5}
           style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.16))", cursor: "grab",
                    transition: "stroke 300ms ease" }} />
-
-        {/* Wide invisible hit area */}
         <circle cx={CX} cy={CY} r={r} fill="none" stroke="transparent" strokeWidth={38}
           style={{ cursor: "pointer" }} />
       </g>
     );
   }
 
-  // ── tooltip width estimate ────────────────────────────────────────────────────
   const tipW = tip ? tip.text.length * 7.2 + 20 : 0;
 
   return (
@@ -317,10 +328,14 @@ export default function DraggableRings({
           onPointerLeave={handlePointerLeave}
         >
           <defs>
-            {/* Clip path for bowl water — coordinates are in reference space (200,200 center),
-                which is correct because this clipPath will be referenced from inside BOWL_T group */}
+            {/*
+              Bowl clip path in SVG VIEWPORT coordinates (CX=CY=160).
+              This avoids clipPathUnits coordinate-system ambiguity: the path is
+              computed by applying BOWL_T to the reference-space bowl outline so
+              it aligns with the rendered bowl regardless of surrounding transforms.
+            */}
             <clipPath id="bowl-clip">
-              <path d="M148 176 L252 176 C252 228 231 244 200 244 C169 244 148 228 148 176 Z" />
+              <path d={BOWL_CLIP_D} />
             </clipPath>
             <filter id="ring-glow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="7" />
@@ -335,12 +350,12 @@ export default function DraggableRings({
             opacity={+(Math.max(0, ePct - 0.42) * 0.62).toFixed(3)}
             filter="url(#halo-blur)" />
 
-          {/* Energy rays — 12 lines around the ring stack */}
+          {/* Energy rays */}
           {Array.from({ length: 12 }, (_, i) => {
-            const a   = (i / 12) * Math.PI * 2;
+            const a  = (i / 12) * Math.PI * 2;
             const len = OUTER_R + 8 + eOn * 16;
-            const x1  = CX + Math.cos(a) * (OUTER_R + 5);
-            const y1  = CY + Math.sin(a) * (OUTER_R + 5);
+            const x1 = CX + Math.cos(a) * (OUTER_R + 5);
+            const y1 = CY + Math.sin(a) * (OUTER_R + 5);
             const opacity = eOn * (0.35 + 0.65 * Math.abs(Math.sin(i * 1.7)));
             return (
               <line key={i} x1={x1} y1={y1}
@@ -350,29 +365,33 @@ export default function DraggableRings({
             );
           })}
 
-          {/* Rings (outermost first so inner renders on top) */}
+          {/* Rings (outermost first) */}
           {renderRing("fullness",  fullness,  fColor)}
           {renderRing("energy",    energy,    eColor)}
           {renderRing("hydration", hydration, hColor)}
 
-          {/* Bowl center — everything in reference-space (200,200), scaled via BOWL_T */}
+          {/* ── Bowl — split into 3 layers so water sits between plate and decorations ── */}
+
+          {/* Layer 1: Dish plate background */}
           <g transform={BOWL_T}>
-            {/* Dish plate */}
             <circle cx={200} cy={200} r={86}
               fill={`rgba(255,255,255,${+(0.4 + hPct * 0.32).toFixed(2)})`} />
+          </g>
 
-            {/* Water fill + bubbles — clipped to bowl shape */}
-            <g clipPath="url(#bowl-clip)">
-              <path ref={waterRef} d="" fill="#3A8F88" opacity="0.85" />
-              {Array.from({ length: 7 }, (_, i) => (
-                <circle key={i}
-                  ref={el => { bubElemsRef.current[i] = el; }}
-                  r={bubDataRef.current[i].r}
-                  fill="#EAF7FB" opacity={0} />
-              ))}
-            </g>
+          {/* Layer 2: Water + bubbles — rendered in VIEWPORT coordinates, clipped to bowl */}
+          <g clipPath="url(#bowl-clip)">
+            <path ref={waterRef} d="" fill="#3A8F88" opacity="0.85" />
+            {Array.from({ length: 7 }, (_, i) => (
+              <circle key={i}
+                ref={el => { bubElemsRef.current[i] = el; }}
+                r={bubDataRef.current[i].r}
+                fill="#EAF7FB" opacity={0} />
+            ))}
+          </g>
 
-            {/* Leaves — render ABOVE water */}
+          {/* Layer 3: Leaves, seed, bowl outline — always above water */}
+          <g transform={BOWL_T}>
+            {/* Leaves */}
             <path d="M194 175 C180 171 169 159 168 142 C183 145 193 158 194 175 Z" fill="#2E7C74" />
             <path d="M206 175 C220 171 231 159 232 142 C217 145 207 158 206 175 Z" fill="#2E7C74" />
 
