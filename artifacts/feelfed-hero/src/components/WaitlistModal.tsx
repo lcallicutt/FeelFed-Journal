@@ -1,17 +1,32 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@workspace/feelfed-ds/components/ui/button";
-import { useJoinWaitlist } from "@workspace/api-client-react";
+import { useMutation } from "@tanstack/react-query";
 
 interface WaitlistModalProps {
   open: boolean;
   onClose: () => void;
 }
 
+function joinWaitlist(email: string): Promise<void> {
+  // POST to the API server — the endpoint may not exist yet but the modal handles errors gracefully
+  return fetch("/api/waitlist", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  }).then((res) => {
+    if (!res.ok) throw new Error("Request failed");
+  });
+}
+
 export default function WaitlistModal({ open, onClose }: WaitlistModalProps) {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { mutate, isPending, error, reset } = useJoinWaitlist();
+
+  const { mutate, isPending, isError, reset } = useMutation({
+    mutationFn: joinWaitlist,
+    onSuccess: () => setSubmitted(true),
+  });
 
   // Focus input when modal opens
   useEffect(() => {
@@ -39,10 +54,7 @@ export default function WaitlistModal({ open, onClose }: WaitlistModalProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-    mutate(
-      { email: email.trim() },
-      { onSuccess: () => setSubmitted(true) },
-    );
+    mutate(email.trim());
   };
 
   if (!open) return null;
@@ -111,7 +123,7 @@ export default function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                 className="font-mono w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring transition"
               />
 
-              {error && (
+              {isError && (
                 <p className="font-mono text-xs text-destructive">
                   Something went wrong — please try again.
                 </p>

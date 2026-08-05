@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import DraggableRings from "@/components/DraggableRings";
+import DraggableRings, { mixColors } from "@/components/DraggableRings";
+import type { RingId } from "@/components/DraggableRings";
 import MoteCanvas from "@/components/MoteCanvas";
 import AmbientLayer from "@/components/AmbientLayer";
 import ReflectionCard from "@/components/ReflectionCard";
@@ -12,22 +13,28 @@ import { getDeviceId } from "@/lib/deviceId";
 const DEEP_TEAL = "#1F4E49";
 const TEAL = "#3A8F88";
 
+const RING_COLORS: Record<RingId, [string, string]> = {
+  fullness:  ["#BBD8D4", "#26706A"],
+  energy:    ["#A3ADAB", "#FF9E52"],
+  hydration: ["#C4A483", "#3FA9D4"],
+};
+
 export default function Home() {
-  const [fullness, setFullness] = useState(0);
-  const [energy, setEnergy] = useState(0);
+  const [fullness, setFullness]   = useState(0);
+  const [energy, setEnergy]       = useState(0);
   const [hydration, setHydration] = useState(0);
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted]     = useState(false);
   const [arrowBounce, setArrowBounce] = useState(false);
   const [waitlistOpen, setWaitlistOpen] = useState(false);
-  const [deviceId] = useState(() => getDeviceId());
+  const [deviceId]  = useState(() => getDeviceId());
   const [prefilled, setPrefilled] = useState(false);
+  const [activeRing, setActiveRing] = useState<RingId | null>(null);
   const sweepDone = useRef(false);
 
   // Load most recent moment to prefill rings on first load
   const { data: momentsData } = useGetMoments({ deviceId, limit: 1 });
 
-  // Pre-fill rings from most recent saved moment (once, on first load)
-  // If we prefill, skip the sweep animation
+  // Pre-fill rings from most recent saved moment (once)
   useEffect(() => {
     if (prefilled) return;
     const latest = momentsData?.moments?.[0];
@@ -36,53 +43,55 @@ export default function Home() {
       setEnergy(latest.energy);
       setHydration(latest.hydration);
       setPrefilled(true);
-      sweepDone.current = true; // prevent sweep from running
+      sweepDone.current = true;
     }
   }, [momentsData, prefilled]);
 
   // Sync CSS custom properties
   useEffect(() => {
     document.documentElement.style.setProperty("--fullness", String(fullness / 10));
-    document.documentElement.style.setProperty("--energy", String(energy / 10));
-    document.documentElement.style.setProperty("--hydration", String(hydration / 10));
+    document.documentElement.style.setProperty("--energy",   String(energy   / 10));
+    document.documentElement.style.setProperty("--hydration",String(hydration / 10));
   }, [fullness, energy, hydration]);
 
-  // Entrance animation + load sweep (rings 0 → 5, staggered)
+  // Staggered load sweep: one ring at a time, 280 ms apart
+  // (fullness at 420 ms, energy at 700 ms, hydration at 980 ms)
   useEffect(() => {
     const tMount = setTimeout(() => setMounted(true), 60);
+    if (sweepDone.current) return () => clearTimeout(tMount);
 
-    if (!sweepDone.current) {
-      sweepDone.current = true;
+    sweepDone.current = true;
+    const TARGET = 5.5;
+    const DURATION = 480;
 
-      const DURATION = 700;
-      const STAGGER = 80;
-      const start = performance.now();
-
-      const animate = (now: number) => {
-        const elapsed = now - start;
-        const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-
-        const fProgress = Math.min(1, elapsed / DURATION);
-        const eProgress = Math.min(1, Math.max(0, (elapsed - STAGGER) / DURATION));
-        const hProgress = Math.min(1, Math.max(0, (elapsed - STAGGER * 2) / DURATION));
-
-        setFullness(Math.round(easeOut(fProgress) * 5 * 2) / 2);
-        setEnergy(Math.round(easeOut(eProgress) * 5 * 2) / 2);
-        setHydration(Math.round(easeOut(hProgress) * 5 * 2) / 2);
-
-        if (hProgress < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-
-      const tSweep = setTimeout(() => requestAnimationFrame(animate), 300);
-      return () => {
-        clearTimeout(tMount);
-        clearTimeout(tSweep);
-      };
+    function sweepRing(
+      setter: (v: number) => void,
+      delay: number
+    ) {
+      return setTimeout(() => {
+        let t0: number | null = null;
+        const tick = (now: number) => {
+          if (!t0) t0 = now;
+          const elapsed = now - t0;
+          const progress = Math.min(1, elapsed / DURATION);
+          const ease = 1 - Math.pow(1 - progress, 3);
+          setter(Math.round(ease * TARGET * 2) / 2);
+          if (progress < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }, delay);
     }
 
-    return () => clearTimeout(tMount);
+    const t1 = sweepRing(setFullness, 420);
+    const t2 = sweepRing(setEnergy, 700);
+    const t3 = sweepRing(setHydration, 980);
+
+    return () => {
+      clearTimeout(tMount);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, []);
 
   // Arrow bounce loop
@@ -94,12 +103,25 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
-  const handleFullness = useCallback((v: number) => setFullness(v), []);
-  const handleEnergy = useCallback((v: number) => setEnergy(v), []);
+  const handleFullness  = useCallback((v: number) => setFullness(v),  []);
+  const handleEnergy    = useCallback((v: number) => setEnergy(v),    []);
   const handleHydration = useCallback((v: number) => setHydration(v), []);
 
+  const handleActiveChange = useCallback((ring: RingId | null) => {
+    setActiveRing(ring);
+  }, []);
+
+  // Compute live chip border color from current ring values
+  const activeColor: string | null = activeRing
+    ? mixColors(
+        RING_COLORS[activeRing][0],
+        RING_COLORS[activeRing][1],
+        (activeRing === "fullness" ? fullness : activeRing === "energy" ? energy : hydration) / 10
+      )
+    : null;
+
   const layerStyle = (delay: number): React.CSSProperties => ({
-    opacity: mounted ? 1 : 0,
+    opacity:   mounted ? 1 : 0,
     transform: mounted ? "translateY(0)" : "translateY(18px)",
     transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
   });
@@ -193,7 +215,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* CTA button + secondary link */}
+        {/* CTA */}
         <div
           style={{ ...layerStyle(220), marginBottom: 28 }}
           className="flex flex-wrap items-center gap-5"
@@ -214,7 +236,7 @@ export default function Home() {
           </a>
         </div>
 
-        {/* DRAG A RING prompt */}
+        {/* Drag prompt */}
         <div style={{ ...layerStyle(300), marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span
@@ -254,12 +276,19 @@ export default function Home() {
             onFullnessChange={handleFullness}
             onEnergyChange={handleEnergy}
             onHydrationChange={handleHydration}
+            onActiveChange={handleActiveChange}
           />
         </div>
 
         {/* Status chips */}
         <div style={{ ...layerStyle(400), marginTop: 16, width: "100%" }}>
-          <StatusChips fullness={fullness} energy={energy} hydration={hydration} />
+          <StatusChips
+            fullness={fullness}
+            energy={energy}
+            hydration={hydration}
+            activeRing={activeRing}
+            activeColor={activeColor}
+          />
         </div>
 
         {/* Reflection card */}
@@ -273,7 +302,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Waitlist modal */}
       <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
     </div>
   );

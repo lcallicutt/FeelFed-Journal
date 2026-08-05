@@ -47,10 +47,12 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
   const [sheen, setSheen] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const typewriterRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const charIndexRef = useRef(0);
-  const isFirstMount = useRef(true);
+  const typewriterRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sheenTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startTypeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Guard: only re-type when the target text actually changes
+  const lastTitleRef = useRef("");
 
   const queryClient = useQueryClient();
   const { mutate: saveMoment, isPending } = useSaveMoment({
@@ -76,61 +78,46 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
   const targetTextRef = useRef(targetText);
   targetTextRef.current = targetText;
 
-  const startSequence = (text: string) => {
-    if (typewriterRef.current) clearTimeout(typewriterRef.current);
-    charIndexRef.current = 0;
+  const startSequence = useCallback((text: string) => {
+    // Clear any in-flight timers
+    if (typewriterRef.current)  clearTimeout(typewriterRef.current);
+    if (sheenTimerRef.current)  clearTimeout(sheenTimerRef.current);
+    if (startTypeTimer.current) clearTimeout(startTypeTimer.current);
+
     setDisplayedText("");
     setBodyVisible(false);
-
-    // 1. Sheen sweep (350ms)
     setSheen(true);
-    const sheenOff = setTimeout(() => setSheen(false), 350);
+    sheenTimerRef.current = setTimeout(() => setSheen(false), 350);
 
-    // 2. Start typewriter after sheen
-    const startType = setTimeout(() => {
+    startTypeTimer.current = setTimeout(() => {
+      let i = 0;
       const type = () => {
-        charIndexRef.current += 1;
-        const partial = text.slice(0, charIndexRef.current);
-        setDisplayedText(partial);
-        if (charIndexRef.current < text.length) {
-          typewriterRef.current = setTimeout(type, 32);
+        i++;
+        setDisplayedText(text.slice(0, i));
+        if (i < text.length) {
+          typewriterRef.current = setTimeout(type, 30);
         } else {
-          // 3. Footer fades in after typing completes
           setTimeout(() => setBodyVisible(true), 80);
         }
       };
       type();
     }, 200);
+  }, []);
 
-    return () => {
-      clearTimeout(sheenOff);
-      clearTimeout(startType);
-    };
-  };
-
-  // Debounce ring changes
+  // Re-trigger typewriter only when the text actually changes
   useEffect(() => {
-    if (isFirstMount.current) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      startSequence(targetTextRef.current);
-    }, 600);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetText]);
+    if (targetText === lastTitleRef.current) return;
+    lastTitleRef.current = targetText;
+    startSequence(targetText);
+  }, [targetText, startSequence]);
 
-  // Start on mount
+  // Cleanup on unmount
   useEffect(() => {
-    isFirstMount.current = false;
-    const cleanup = startSequence(targetText);
     return () => {
-      cleanup?.();
-      if (typewriterRef.current) clearTimeout(typewriterRef.current);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (typewriterRef.current)  clearTimeout(typewriterRef.current);
+      if (sheenTimerRef.current)  clearTimeout(sheenTimerRef.current);
+      if (startTypeTimer.current) clearTimeout(startTypeTimer.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSave = useCallback(() => {
@@ -160,7 +147,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
         width: "100%",
       }}
     >
-      {/* Sheen sweep overlay */}
+      {/* Sheen sweep */}
       <div
         aria-hidden
         style={{
@@ -193,7 +180,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
         </span>
       </div>
 
-      {/* Typewriter text — italic serif */}
+      {/* Typewriter text */}
       <p
         className="font-serif"
         style={{
@@ -219,7 +206,7 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
         />
       </p>
 
-      {/* Footer row — disclaimer + save button */}
+      {/* Footer row */}
       <div
         style={{
           display: "flex",
@@ -254,7 +241,6 @@ export default function ReflectionCard({ fullness, energy, hydration }: Reflecti
         </Button>
       </div>
 
-      {/* Caret blink keyframe */}
       <style>{`
         @keyframes feelfed-caret {
           0%, 100% { opacity: 1; }
