@@ -5,6 +5,7 @@ import AmbientLayer from "@/components/AmbientLayer";
 import ReflectionCard from "@/components/ReflectionCard";
 import StatusChips from "@/components/StatusChips";
 import MomentHistory from "@/components/MomentHistory";
+import WaitlistModal from "@/components/WaitlistModal";
 import { useGetMoments } from "@workspace/api-client-react";
 import { getDeviceId } from "@/lib/deviceId";
 
@@ -17,6 +18,7 @@ export default function Home() {
   const [hydration, setHydration] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [arrowBounce, setArrowBounce] = useState(false);
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
   const [deviceId] = useState(() => getDeviceId());
   const [prefilled, setPrefilled] = useState(false);
   const sweepDone = useRef(false);
@@ -191,8 +193,29 @@ export default function Home() {
           </p>
         </div>
 
+        {/* CTA button + secondary link */}
+        <div
+          style={{ ...layerStyle(220), marginBottom: 28 }}
+          className="flex flex-wrap items-center gap-5"
+        >
+          <button
+            onClick={() => setWaitlistOpen(true)}
+            className="font-sans inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-7 h-11 text-sm font-semibold tracking-wide transition-all hover:opacity-88 hover:-translate-y-px active:translate-y-0 shrink-0"
+            style={{ boxShadow: "0 4px 18px hsla(var(--primary) / 0.32)" }}
+          >
+            Join the waitlist
+          </button>
+          <a
+            href="#sample-summary"
+            onClick={(e) => e.preventDefault()}
+            className="font-mono text-sm text-foreground/55 underline underline-offset-2 transition-colors hover:text-foreground/85 cursor-pointer"
+          >
+            See a sample doctor summary
+          </a>
+        </div>
+
         {/* DRAG A RING prompt */}
-        <div style={{ ...layerStyle(240), marginBottom: 8 }}>
+        <div style={{ ...layerStyle(300), marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span
               className="font-sans"
@@ -249,6 +272,9 @@ export default function Home() {
           <MomentHistory deviceId={deviceId} />
         </div>
       </div>
+
+      {/* Waitlist modal */}
+      <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
     </div>
   );
 }
