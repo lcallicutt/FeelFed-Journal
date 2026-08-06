@@ -95,7 +95,9 @@ export default function MoteCanvas({ fullness, energy, hydration }: MoteCanvasPr
       motesRef.current = motesRef.current.filter((mote) => {
         mote.x += mote.vx;
         mote.y += mote.vy;
-        mote.life += 0.003;
+        // Slow life decay so motes survive the full climb up the viewport
+        // instead of fading out partway.
+        mote.life += 0.0008;
 
         // Size + alpha driven by the OWNING ring's current value, so raising
         // any ring visibly grows its motes. Floors keep low values present but small.

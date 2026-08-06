@@ -1,6 +1,6 @@
 import {
   C,
-  Reveal,
+  PhoneAnimContext,
   SecHead,
   Phone,
   StatusBar,
@@ -17,6 +17,7 @@ import {
   Bars,
   BtnFull,
 } from "./primitives";
+import { useReveal, revealStyle } from "./useReveal";
 
 function StepNum({ n }: { n: number }) {
   return (
@@ -56,8 +57,9 @@ function Step({
   index: number;
   children: React.ReactNode;
 }) {
+  const { ref, shown } = useReveal();
   return (
-    <Reveal index={index} style={{ position: "relative" }}>
+    <div ref={ref} style={{ ...revealStyle(shown, index), position: "relative" }}>
       <StepNum n={n} />
       <div
         style={{
@@ -68,7 +70,7 @@ function Step({
           marginBottom: 30,
         }}
       >
-        {children}
+        <PhoneAnimContext.Provider value={shown}>{children}</PhoneAnimContext.Provider>
       </div>
       <div
         className="font-sans"
@@ -90,7 +92,7 @@ function Step({
         {title}
       </h3>
       <p style={{ fontSize: 15.5, lineHeight: 1.62, color: C.subhead }}>{body}</p>
-    </Reveal>
+    </div>
   );
 }
 
@@ -158,7 +160,7 @@ export default function HowItWorks() {
             index={1}
             role="Eat and observe"
             title="Stay with your body"
-            body="Log what you actually managed, not what you planned. Four bites is a complete entry. So is stopping."
+            body="Log what actually happened, not what you planned. Four bites is a complete entry. So is stopping."
           >
             <Phone>
               <StatusBar time="9:58" />
@@ -223,7 +225,7 @@ export default function HowItWorks() {
                   Fullness ratings were highest at evening meals on 9 of 14 days.
                 </PCard>
                 <PCard tag="Recorded" meta="14 days">
-                  Blended and liquid items were completed more often than solid items.
+                  Blended and liquid items were easier to finish than solid items in your recent entries.
                 </PCard>
                 <PCard tag="Recorded" meta="14 days">
                   Discomfort was noted 6 times, 5 of them after 6 PM.

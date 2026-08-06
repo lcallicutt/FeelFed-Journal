@@ -1,4 +1,14 @@
+import { createContext, useContext } from "react";
 import { useReveal, revealStyle } from "./useReveal";
+
+/* Phone animation context — a Step (or any wrapper) provides `true` once its
+ * phone enters the viewport, and the animated phone widgets (Scale, Chips, Bars)
+ * read it to trigger their one-time entrance. Default `true` means the widgets
+ * render fully filled when used outside an animated context. */
+export const PhoneAnimContext = createContext<boolean>(true);
+export function usePhoneAnim() {
+  return useContext(PhoneAnimContext);
+}
 
 /* ── Mockup palette (mapped to DS tokens where a token exists) ─────────────
  * cream #FBF7F2 -> --background   ink #1F4E49 -> --secondary/--foreground
@@ -54,6 +64,7 @@ export function SecHead({
   center = false,
   maxWidth = "34ch",
   index = 0,
+  marginBottom,
 }: {
   kicker: string;
   kickerColor?: string;
@@ -68,13 +79,14 @@ export function SecHead({
   center?: boolean;
   maxWidth?: string;
   index?: number;
+  marginBottom?: number;
 }) {
   return (
     <Reveal
       index={index}
       className="font-mono"
       style={{
-        marginBottom: center ? 34 : 72,
+        marginBottom: marginBottom ?? (center ? 34 : 72),
         maxWidth,
         ...(center ? { marginLeft: "auto", marginRight: "auto", textAlign: "center" } : {}),
       }}
@@ -320,7 +332,8 @@ export function QSub({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Segmented scale: `filled` bars out of 10, accent variant sets colour. */
+/** Segmented scale: `filled` bars out of 10, accent variant sets colour.
+ * When its phone enters the viewport the filled bars light up left-to-right. */
 export function Scale({
   filled,
   variant = "teal",
@@ -328,20 +341,27 @@ export function Scale({
   filled: number;
   variant?: "teal" | "peach" | "water";
 }) {
+  const anim = usePhoneAnim();
   const fillColor = variant === "peach" ? C.peach : variant === "water" ? C.water : C.teal;
   return (
     <div style={{ display: "flex", gap: 4, marginBottom: 6 }}>
-      {Array.from({ length: 10 }).map((_, i) => (
-        <span
-          key={i}
-          style={{
-            flex: 1,
-            height: 7,
-            borderRadius: 99,
-            background: i < filled ? fillColor : "rgba(58,143,136,.15)",
-          }}
-        />
-      ))}
+      {Array.from({ length: 10 }).map((_, i) => {
+        const isFilled = i < filled;
+        const lit = anim && isFilled;
+        return (
+          <span
+            key={i}
+            style={{
+              flex: 1,
+              height: 7,
+              borderRadius: 99,
+              background: lit ? fillColor : "rgba(58,143,136,.15)",
+              transition: "background 0.45s cubic-bezier(.4,0,.2,1)",
+              transitionDelay: isFilled ? `${180 + i * 55}ms` : "0ms",
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -366,17 +386,27 @@ export function ScaleFoot({ left, right }: { left: string; right: string }) {
 export type ChipDef = { label: string; on?: boolean; peach?: boolean };
 
 export function Chips({ chips }: { chips: ChipDef[] }) {
+  const anim = usePhoneAnim();
+  // Selected chips light up one at a time; count the "on" chips for stagger index.
+  let onSeen = -1;
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
       {chips.map((c, i) => {
-        let bg = "transparent";
-        let borderColor = "rgba(58,143,136,.28)";
-        let color = "#41625E";
-        if (c.on && c.peach) {
+        const restingBg = "transparent";
+        const restingBorder = "rgba(58,143,136,.28)";
+        const restingColor = "#41625E";
+        let bg = restingBg;
+        let borderColor = restingBorder;
+        let color = restingColor;
+        let onIndex = -1;
+        if (c.on) onIndex = ++onSeen;
+        // `active` means the selected styling is currently shown.
+        const active = c.on && anim;
+        if (active && c.peach) {
           bg = C.peach;
           borderColor = C.peach;
           color = "#4A3524";
-        } else if (c.on) {
+        } else if (active) {
           bg = C.tealDeep;
           borderColor = C.tealDeep;
           color = C.cream;
@@ -392,6 +422,9 @@ export function Chips({ chips }: { chips: ChipDef[] }) {
               background: bg,
               color,
               whiteSpace: "nowrap",
+              transition:
+                "background 0.35s cubic-bezier(.4,0,.2,1), border-color 0.35s cubic-bezier(.4,0,.2,1), color 0.35s cubic-bezier(.4,0,.2,1)",
+              transitionDelay: c.on ? `${260 + onIndex * 130}ms` : "0ms",
             }}
           >
             {c.label}
@@ -451,6 +484,7 @@ export function PCard({
 }
 
 export function Bars({ heights }: { heights: number[] }) {
+  const anim = usePhoneAnim();
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 56, margin: "10px 0 8px" }}>
       {heights.map((h, i) => (
@@ -458,10 +492,13 @@ export function Bars({ heights }: { heights: number[] }) {
           key={i}
           style={{
             flex: 1,
-            height: `${h}%`,
+            height: anim ? `${h}%` : "0%",
             borderRadius: "4px 4px 2px 2px",
             background: C.teal,
             opacity: 0.75,
+            transformOrigin: "bottom",
+            transition: "height 0.5s cubic-bezier(.4,0,.2,1)",
+            transitionDelay: `${150 + i * 45}ms`,
           }}
         />
       ))}

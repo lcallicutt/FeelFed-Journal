@@ -9,8 +9,10 @@ import MomentHistory from "@/components/MomentHistory";
 import WaitlistModal from "@/components/WaitlistModal";
 import TrustBadges from "@/components/TrustBadges";
 import HowItWorks from "@/components/sections/HowItWorks";
+import AppNav from "@/components/sections/AppNav";
 import BuiltForReal from "@/components/sections/BuiltForReal";
 import DayInFeelFed from "@/components/sections/DayInFeelFed";
+import Mission from "@/components/sections/Mission";
 import Privacy from "@/components/sections/Privacy";
 import Waitlist from "@/components/sections/Waitlist";
 import { useGetMoments } from "@workspace/api-client-react";
@@ -260,8 +262,10 @@ export default function Home() {
          backgrounds cover the ambient canvas as the visitor scrolls. */}
       <div className="ff-sections relative z-[2]" style={{ background: "#FBF7F2" }}>
         <HowItWorks />
+        <AppNav />
         <BuiltForReal />
         <DayInFeelFed />
+        <Mission />
         <Privacy />
         <Waitlist onJoin={() => setWaitlistOpen(true)} />
       </div>

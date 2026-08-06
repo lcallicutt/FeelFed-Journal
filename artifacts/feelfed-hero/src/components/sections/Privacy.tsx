@@ -6,8 +6,8 @@ const ITEMS = [
     body: "No public profile, ever, by default. Nothing is shared with a doctor unless you send it.",
   },
   {
-    title: "Never sold, never targeted",
-    body: "Your food, weight, symptoms, and activity will not be sold or used to target advertising.",
+    title: "Your wellness entries are not advertising data",
+    body: "FeelFed will not sell your food, symptom, weight, or activity entries for targeted advertising.",
   },
   {
     title: "Export it or delete it",
@@ -33,7 +33,7 @@ export default function Privacy() {
           kicker="Privacy"
           title="Your experiences"
           em="belong to you."
-          subhead="This is health-adjacent information about your body. It's being designed accordingly, from the first line of code."
+          subhead="What you record in FeelFed is personal. Privacy is being considered from the first line of code."
         />
 
         <div className="ff-plist">

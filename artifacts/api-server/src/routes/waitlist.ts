@@ -7,6 +7,8 @@ const router: IRouter = Router();
 
 const JoinWaitlistBody = z.object({
   email: z.string().email(),
+  firstName: z.string().max(100).optional(),
+  interest: z.string().max(200).optional(),
 });
 
 router.post("/waitlist", async (req, res) => {
@@ -16,12 +18,12 @@ router.post("/waitlist", async (req, res) => {
     return;
   }
 
-  const { email } = parsed.data;
+  const { email, firstName, interest } = parsed.data;
 
   try {
     const [entry] = await db
       .insert(waitlistEntriesTable)
-      .values({ email })
+      .values({ email, firstName, interest })
       .onConflictDoNothing()
       .returning();
 

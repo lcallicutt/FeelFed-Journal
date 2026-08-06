@@ -104,12 +104,32 @@ function Moment({
 export default function DayInFeelFed() {
   return (
     <section style={{ position: "relative", padding: "clamp(80px,10vw,120px) clamp(22px,4vw,44px)" }}>
-      <div style={{ maxWidth: 1180, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1180, margin: "0 auto", position: "relative" }}>
         <SecHead
           kicker="A day in FeelFed"
           title="Ordinary days are what make a"
           em="pattern readable."
+          marginBottom={28}
         />
+
+        {/* Subtle connecting visual: a faint curved path that flows from the
+            heading down into the timeline column, with gentle "check-in" dots
+            drifting along it. Desktop-only, decorative, respects reduced-motion
+            (dots animate via CSS which the reduced-motion rule neutralises). */}
+        <div className="ff-tlbridge" aria-hidden>
+          <svg width="100%" height="100%" viewBox="0 0 240 120" preserveAspectRatio="none" fill="none">
+            <path
+              d="M18 4 C 18 60, 6 66, 6 118"
+              stroke="rgba(58,143,136,.28)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeDasharray="4 7"
+            />
+          </svg>
+          <span className="ff-checkdot ff-checkdot-1" />
+          <span className="ff-checkdot ff-checkdot-2" />
+          <span className="ff-checkdot ff-checkdot-3" />
+        </div>
 
         <div className="ff-tlwrap">
           {/* Timeline */}

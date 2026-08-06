@@ -70,6 +70,61 @@
   }
 }
 
+/* "A day in FeelFed" — faint connecting bridge from heading into the timeline.
+ * Desktop-only decorative continuity; hidden on mobile where the layout stacks. */
+.ff-tlbridge {
+  display: none;
+}
+@media (min-width: 1001px) {
+  .ff-tlbridge {
+    display: block;
+    position: absolute;
+    left: 6px;
+    top: -14px;
+    width: 80px;
+    height: 120px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .ff-checkdot {
+    position: absolute;
+    left: 3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    opacity: 0;
+    animation: ffCheckDrift 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .ff-checkdot-1 {
+    background: #3a8f88;
+    animation-delay: 0s;
+  }
+  .ff-checkdot-2 {
+    background: #f0a576;
+    animation-delay: 2s;
+  }
+  .ff-checkdot-3 {
+    background: #4fa9c6;
+    animation-delay: 4s;
+  }
+}
+@keyframes ffCheckDrift {
+  0% {
+    opacity: 0;
+    transform: translate(12px, 0) scale(0.6);
+  }
+  15% {
+    opacity: 0.5;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 112px) scale(0.9);
+  }
+}
+
 /* Reduced-motion visitors: the reveal hook already shows content immediately;
  * this collapses any remaining transitions so nothing animates. */
 @media (prefers-reduced-motion: reduce) {
@@ -77,5 +132,8 @@
     transition-duration: 1ms !important;
     transition-delay: 0ms !important;
     animation-duration: 1ms !important;
+  }
+  .ff-checkdot {
+    display: none;
   }
 }
