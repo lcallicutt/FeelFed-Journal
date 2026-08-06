@@ -60,9 +60,233 @@
   ]
 }
     </script>
+    <!--
+      ff-prerender: static HTML snapshot for social/AI crawlers that do not execute JS.
+      React replaces #root's children on mount — normal users never see this.
+      Keep in sync with home.tsx and the section components when copy changes.
+    -->
+    <style>
+      /* Hide the prerender the instant React paints — zero flash for real users. */
+      #ff-prerender { visibility: visible; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        ─────────────────────────────────────────────────────────────────────────
+        STATIC PRE-RENDER
+        Social crawlers (Facebook, LinkedIn, Slack), AI crawlers (GPTBot,
+        ClaudeBot, PerplexityBot), and first-pass Googlebot all see this markup.
+        React mounts and replaces it immediately for real visitors.
+        ─────────────────────────────────────────────────────────────────────────
+      -->
+      <div id="ff-prerender" style="background:#FBF7F2;color:#1F4E49;font-family:Georgia,serif;min-height:100vh;padding:40px 24px;max-width:720px;margin:0 auto;line-height:1.6">
+
+        <!-- ── Header / wordmark ─────────────────────────────────────────── -->
+        <header style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
+          <img src="/logo.png" alt="FeelFed logo" width="36" height="36" style="border-radius:50%;object-fit:cover" />
+          <span style="font-size:20px;font-weight:600;letter-spacing:-0.01em">FeelFed</span>
+          <span style="font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#3A8F88;margin-left:4px">Coming soon to iOS</span>
+        </header>
+
+        <!-- ── Hero ─────────────────────────────────────────────────────── -->
+        <main>
+          <h1 style="font-size:clamp(2.6rem,8vw,4.2rem);font-weight:500;line-height:1.05;color:#1F4E49;margin:0 0 18px;letter-spacing:-0.02em">
+            Four bites is still <em style="font-style:italic;color:#F0A576">data.</em>
+          </h1>
+
+          <p style="font-family:monospace;font-size:1rem;line-height:1.65;color:#1F4E49;opacity:.85;margin:0 0 28px">
+            Most food apps assume you finish the plate. FeelFed records what
+            actually happened: the four bites, the smoothie day, or the day you
+            had no appetite at all.
+            <strong>Log fullness, energy, and hydration without grades, streaks, or guilt.</strong>
+          </p>
+
+          <a href="#waitlist" style="display:inline-block;background:#1F4E49;color:#FBF7F2;padding:13px 28px;border-radius:99px;font-family:sans-serif;font-size:14px;font-weight:600;letter-spacing:0.04em;text-decoration:none;margin-bottom:40px">
+            Join the waitlist
+          </a>
+
+          <!-- ── How It Works ───────────────────────────────────────────── -->
+          <section aria-labelledby="how-it-works-heading" style="margin-bottom:60px">
+            <p style="font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.11em;text-transform:uppercase;color:#1F4E49;margin-bottom:8px">How it works</p>
+            <h2 id="how-it-works-heading" style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;line-height:1.1;margin:0 0 8px;letter-spacing:-0.02em">
+              Notice what your body is telling you.
+            </h2>
+            <p style="font-family:sans-serif;font-size:15px;color:#4A6A66;margin:0 0 32px">
+              Three moments. No calorie fields, no goals to miss, no plate to clean.
+            </p>
+
+            <article style="margin-bottom:28px">
+              <p style="font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.11em;text-transform:uppercase;color:#1F4E49;margin-bottom:6px">Check in</p>
+              <h3 style="font-size:25px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em">Notice how you feel</h3>
+              <p style="font-size:15.5px;line-height:1.62;color:#4A6A66;margin:0">
+                Hunger, energy, hydration, mood, and anything your body is doing. Thirty seconds, before anything is on the plate.
+              </p>
+            </article>
+
+            <article style="margin-bottom:28px">
+              <p style="font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.11em;text-transform:uppercase;color:#1F4E49;margin-bottom:6px">Eat and observe</p>
+              <h3 style="font-size:25px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em">Stay with your body</h3>
+              <p style="font-size:15.5px;line-height:1.62;color:#4A6A66;margin:0">
+                Log what actually happened, not what you planned. Four bites is a complete entry. So is stopping.
+              </p>
+            </article>
+
+            <article style="margin-bottom:28px">
+              <p style="font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.11em;text-transform:uppercase;color:#1F4E49;margin-bottom:6px">Understand your patterns</p>
+              <h3 style="font-size:25px;font-weight:500;margin:0 0 6px;letter-spacing:-0.01em">See what you've been living</h3>
+              <p style="font-size:15.5px;line-height:1.62;color:#4A6A66;margin:0">
+                Plain counts of what you recorded, never conclusions about why. Export it as a summary you can hand to a doctor.
+              </p>
+            </article>
+          </section>
+
+          <!-- ── Built For Real ─────────────────────────────────────────── -->
+          <section aria-labelledby="built-for-real-heading" style="background:#1F3F39;color:#DCE9E7;padding:48px 32px;border-radius:20px;margin-bottom:60px">
+            <p style="font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.11em;text-transform:uppercase;color:#F0A576;margin-bottom:8px">Built for real experiences</p>
+            <h2 id="built-for-real-heading" style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;line-height:1.1;margin:0 0 32px;letter-spacing:-0.02em;color:#FBF7F2">
+              For the days that <em style="font-style:italic;color:#F0A576">don't fit</em> the app you already tried.
+            </h2>
+
+            <ul style="list-style:none;padding:0;margin:0;display:grid;gap:20px">
+              <li>
+                <h4 style="font-size:23px;font-style:italic;font-weight:500;color:#FBF7F2;margin:0 0 8px;line-height:1.2">When you rarely feel hungry</h4>
+                <p style="font-size:15px;line-height:1.6;color:#A9C4C0;margin:0">Track what you were able to eat and how your body responded, without a target sitting there unmet.</p>
+              </li>
+              <li>
+                <h4 style="font-size:23px;font-style:italic;font-weight:500;color:#FBF7F2;margin:0 0 8px;line-height:1.2">When you get full in three bites</h4>
+                <p style="font-size:15px;line-height:1.6;color:#A9C4C0;margin:0">Record portions, how quickly fullness arrived, discomfort, and how long it took to pass.</p>
+              </li>
+              <li>
+                <h4 style="font-size:23px;font-style:italic;font-weight:500;color:#FBF7F2;margin:0 0 8px;line-height:1.2">When your energy makes no sense</h4>
+                <p style="font-size:15px;line-height:1.6;color:#A9C4C0;margin:0">Log energy on its own, alongside hydration, movement, sleep, and meals, and see them side by side.</p>
+              </li>
+              <li>
+                <h4 style="font-size:23px;font-style:italic;font-weight:500;color:#FBF7F2;margin:0 0 8px;line-height:1.2">When you need to explain the whole picture</h4>
+                <p style="font-size:15px;line-height:1.6;color:#A9C4C0;margin:0">Walk into an appointment with an organized record instead of trying to remember three weeks on the spot.</p>
+              </li>
+            </ul>
+          </section>
+
+          <!-- ── A Day in FeelFed ───────────────────────────────────────── -->
+          <section aria-labelledby="day-in-feelfed-heading" style="margin-bottom:60px">
+            <p style="font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.11em;text-transform:uppercase;color:#1F4E49;margin-bottom:8px">A day in FeelFed</p>
+            <h2 id="day-in-feelfed-heading" style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;line-height:1.1;margin:0 0 28px;letter-spacing:-0.02em">
+              Ordinary days are what make a <em style="font-style:italic">pattern readable.</em>
+            </h2>
+
+            <ol style="list-style:none;padding:0;margin:0;border-left:2px solid #3A8F88;padding-left:24px;display:grid;gap:0">
+              <li style="padding:18px 0">
+                <time style="font-family:sans-serif;font-size:12px;font-weight:500;letter-spacing:0.09em;color:#6B8B86;display:block;margin-bottom:4px">9:00 AM</time>
+                <h5 style="font-size:21px;font-weight:500;margin:0 0 4px;color:#1F3F39">No appetite, water only</h5>
+                <p style="font-size:15px;line-height:1.55;color:#4A6A66;margin:0">Energy logged at 3. Nothing eaten yet. Recorded, not flagged.</p>
+              </li>
+              <li style="padding:18px 0">
+                <time style="font-family:sans-serif;font-size:12px;font-weight:500;letter-spacing:0.09em;color:#6B8B86;display:block;margin-bottom:4px">12:30 PM</time>
+                <h5 style="font-size:21px;font-weight:500;margin:0 0 4px;color:#1F3F39">Small meal, a few bites</h5>
+                <p style="font-size:15px;line-height:1.55;color:#4A6A66;margin:0">Fullness climbed from 2 to 8 within ten minutes. Bloating noted.</p>
+              </li>
+              <li style="padding:18px 0">
+                <time style="font-family:sans-serif;font-size:12px;font-weight:500;letter-spacing:0.09em;color:#6B8B86;display:block;margin-bottom:4px">1:15 PM</time>
+                <h5 style="font-size:21px;font-weight:500;margin:0 0 4px;color:#1F3F39">Follow-up check-in</h5>
+                <p style="font-size:15px;line-height:1.55;color:#4A6A66;margin:0">Still uncomfortable. Energy unchanged. One tap, no typing required.</p>
+              </li>
+              <li style="padding:18px 0">
+                <time style="font-family:sans-serif;font-size:12px;font-weight:500;letter-spacing:0.09em;color:#6B8B86;display:block;margin-bottom:4px">3:15 PM</time>
+                <h5 style="font-size:21px;font-weight:500;margin:0 0 4px;color:#1F3F39">Short walk, ten minutes</h5>
+                <p style="font-size:15px;line-height:1.55;color:#4A6A66;margin:0">Energy after: 5. Marked as completed, shortened, or skipped — all equally valid.</p>
+              </li>
+              <li style="padding:18px 0">
+                <time style="font-family:sans-serif;font-size:12px;font-weight:500;letter-spacing:0.09em;color:#6B8B86;display:block;margin-bottom:4px">6:00 PM</time>
+                <h5 style="font-size:21px;font-weight:500;margin:0 0 4px;color:#1F3F39">Smoothie, finished it</h5>
+                <p style="font-size:15px;line-height:1.55;color:#4A6A66;margin:0">Comfortable fullness. Logged as blended. Hydration up for the day.</p>
+              </li>
+            </ol>
+
+            <p style="margin-top:24px;font-size:15px;line-height:1.6;color:#4A6A66">
+              FeelFed adds up what you recorded and nothing else. Five entries, three textures, two
+              symptoms, one walk. No score. No streak. No note telling you what any of it means.
+            </p>
+          </section>
+
+          <!-- ── Mission ───────────────────────────────────────────────── -->
+          <section aria-labelledby="mission-heading" style="text-align:center;margin-bottom:60px">
+            <p style="font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.17em;text-transform:uppercase;color:#1F4E49;margin-bottom:16px">Why FeelFed exists</p>
+            <h2 id="mission-heading" style="font-size:clamp(1.8rem,3.8vw,2.8rem);font-weight:300;line-height:1.08;letter-spacing:-0.02em;margin:0 0 16px">
+              Built because <em style="font-style:italic;font-weight:500;color:#1F4E49">"everything looks normal"</em> does not always tell the whole story.
+            </h2>
+            <p style="font-size:17px;line-height:1.65;color:#4A6A66;max-width:52ch;margin:0 auto">
+              FeelFed began with a simple need: a better way to document low appetite, early fullness,
+              energy changes, movement, hydration, and the everyday experiences that are difficult to
+              remember or explain later.
+            </p>
+          </section>
+
+          <!-- ── Privacy ───────────────────────────────────────────────── -->
+          <section aria-labelledby="privacy-heading" style="background:linear-gradient(170deg,#EFF5F3,#F6F1EA);padding:48px 32px;border-radius:20px;margin-bottom:60px">
+            <p style="font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.11em;text-transform:uppercase;color:#1F4E49;margin-bottom:8px">Privacy</p>
+            <h2 id="privacy-heading" style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;line-height:1.1;margin:0 0 8px;letter-spacing:-0.02em">
+              Your experiences <em style="font-style:italic">belong to you.</em>
+            </h2>
+            <p style="font-family:sans-serif;font-size:15px;color:#4A6A66;margin:0 0 28px">
+              What you record in FeelFed is personal. Privacy is being considered from the first line of code.
+            </p>
+
+            <ul style="list-style:none;padding:0;margin:0;display:grid;gap:0">
+              <li style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid rgba(58,143,136,.14)">
+                <div>
+                  <strong style="font-family:sans-serif;display:block;font-size:14.5px;font-weight:500;margin-bottom:3px;color:#1F3F39">Only you see your records</strong>
+                  <p style="font-size:14px;line-height:1.5;color:#4A6A66;margin:0">No public profile, ever, by default. Nothing is shared with a doctor unless you send it.</p>
+                </div>
+              </li>
+              <li style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid rgba(58,143,136,.14)">
+                <div>
+                  <strong style="font-family:sans-serif;display:block;font-size:14.5px;font-weight:500;margin-bottom:3px;color:#1F3F39">Your wellness entries are not advertising data</strong>
+                  <p style="font-size:14px;line-height:1.5;color:#4A6A66;margin:0">FeelFed will not sell your food, symptom, weight, or activity entries for targeted advertising.</p>
+                </div>
+              </li>
+              <li style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid rgba(58,143,136,.14)">
+                <div>
+                  <strong style="font-family:sans-serif;display:block;font-size:14.5px;font-weight:500;margin-bottom:3px;color:#1F3F39">Export it or delete it</strong>
+                  <p style="font-size:14px;line-height:1.5;color:#4A6A66;margin:0">Take your full history with you, correct it, or remove your account entirely.</p>
+                </div>
+              </li>
+              <li style="display:flex;gap:12px;padding:14px 0">
+                <div>
+                  <strong style="font-family:sans-serif;display:block;font-size:14.5px;font-weight:500;margin-bottom:3px;color:#1F3F39">Plain language, no scoring</strong>
+                  <p style="font-size:14px;line-height:1.5;color:#4A6A66;margin:0">No grades on your meals, no shame mechanics, no conclusions drawn about your body.</p>
+                </div>
+              </li>
+            </ul>
+
+            <p style="margin-top:28px;font-size:13px;font-style:italic;color:#6B8B86">
+              FeelFed is a personal wellness journal. It does not diagnose, treat, or prevent any
+              condition, and it does not determine why you feel the way you do. It records what you
+              tell it.
+            </p>
+          </section>
+
+          <!-- ── Waitlist CTA ───────────────────────────────────────────── -->
+          <section id="waitlist" aria-labelledby="waitlist-heading" style="background:#1F4E49;color:#FBF7F2;padding:64px 32px;border-radius:20px;text-align:center;margin-bottom:40px">
+            <p style="font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.17em;text-transform:uppercase;color:rgba(251,247,242,.75);margin-bottom:12px">Early access</p>
+            <h2 id="waitlist-heading" style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:400;line-height:1.1;margin:0 0 20px;letter-spacing:-0.02em;color:#FBF7F2">
+              Your body is already talking.
+            </h2>
+            <p style="font-size:19px;line-height:1.6;color:rgba(251,247,242,.86);max-width:46ch;margin:0 auto 32px">
+              FeelFed helps you write it down. Join the early access list and follow the build as it
+              becomes a real app.
+            </p>
+            <a href="mailto:hello@feelfed.app" style="display:inline-block;background:#FBF7F2;color:#1F3F39;padding:17px 42px;border-radius:99px;font-family:sans-serif;font-size:16px;font-weight:500;text-decoration:none">
+              Join the early access list
+            </a>
+            <p style="margin-top:18px;font-size:13.5px;color:rgba(251,247,242,.6)">
+              No spam. You'll hear from me when there's something real to show.
+            </p>
+          </section>
+        </main>
+      </div>
+      <!-- /ff-prerender -->
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
