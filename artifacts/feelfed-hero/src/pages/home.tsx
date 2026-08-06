@@ -232,6 +232,13 @@ export default function Home() {
             >
               Join the waitlist
             </button>
+            <a
+              href="/feelfed-app/"
+              className="font-sans inline-flex items-center justify-center rounded-full border px-7 h-11 text-sm font-semibold tracking-wide transition-all hover:-translate-y-px active:translate-y-0 shrink-0"
+              style={{ minHeight: 44, color: DEEP_TEAL, borderColor: "hsla(var(--primary) / 0.35)" }}
+            >
+              Try the app preview
+            </a>
             <span
               className="font-mono text-sm"
               style={{ color: DEEP_TEAL, opacity: 0.5 }}>

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/feelfed-app/"
+title = "FeelFed App Prototype"
+description = "A high-fidelity, mobile-first clickable prototype of the FeelFed app: Today dashboard, before/during/after eating check-ins, scheduled follow-up, daily timeline, and 14-day descriptive trends. Uses realistic sample data (no backend/auth yet) and the FeelFed design system, structured for later development into an Expo mobile app."
+version = "1.0.0"
+id = "artifacts/feelfed-app"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/feelfed-app/" ]
+localPort = 25792
+
+[services.development]
+run = "pnpm --filter @workspace/feelfed-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/feelfed-app", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/feelfed-app/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25792"
+BASE_PATH = "/feelfed-app/"
