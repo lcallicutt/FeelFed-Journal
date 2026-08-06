@@ -232,12 +232,11 @@ export default function Home() {
             >
               Join the waitlist
             </button>
-            <a href="#"
-              onClick={(e) => e.preventDefault()}
-              className="font-mono text-sm underline underline-offset-2 transition-colors hover:opacity-80 cursor-pointer"
+            <span
+              className="font-mono text-sm"
               style={{ color: DEEP_TEAL, opacity: 0.5 }}>
-              See a sample doctor summary
-            </a>
+              Doctor summaries coming soon
+            </span>
           </div>
 
           {/* Trust badges */}
