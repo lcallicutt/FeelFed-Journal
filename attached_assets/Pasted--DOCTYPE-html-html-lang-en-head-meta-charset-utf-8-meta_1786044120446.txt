@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FeelFed — below the fold</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300;1,9..144,500&family=Poppins:wght@400;500&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FBF7F2;--paper:#F6F1EA;--teal:#3A8F88;--teal-deep:#2E7C74;
+  --ink:#1F4E49;--peach:#F0A576;--water:#4FA9C6;--muted:#6E8481;
+  --sand:#C4A483;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Lato',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+  overflow-x:hidden;-webkit-font-smoothing:antialiased}
+section{position:relative;padding:120px 44px}
+.inner{max-width:1180px;margin:0 auto}
+
+.sechead{margin-bottom:72px;max-width:34ch}
+.kicker{display:inline-flex;align-items:center;gap:10px;font-family:'Poppins';font-size:11px;
+  font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--teal-deep);margin-bottom:18px}
+.kicker::before{content:"";width:26px;height:1px;background:var(--teal)}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:300;font-size:clamp(36px,4.4vw,58px);
+  line-height:1.02;letter-spacing:-.025em}
+h2 em{font-style:italic;font-weight:500;color:var(--teal-deep)}
+.subhead{margin-top:18px;font-size:18px;line-height:1.6;color:#3D5C58;max-width:44ch}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.4,0,.2,1),transform .8s cubic-bezier(.4,0,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+/* ---------- phone frame ---------- */
+.phone{position:relative;width:264px;aspect-ratio:264/540;flex:none;
+  background:#1A2A28;border-radius:38px;padding:9px;
+  box-shadow:0 2px 4px rgba(31,78,73,.1),0 34px 60px -30px rgba(31,78,73,.5)}
+.screen{position:relative;width:100%;height:100%;background:var(--cream);
+  border-radius:30px;overflow:hidden;display:flex;flex-direction:column}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:74px;height:19px;background:#1A2A28;border-radius:99px;z-index:4}
+.statusbar{display:flex;justify-content:space-between;align-items:center;
+  padding:11px 18px 4px;font-size:10px;font-weight:700;color:var(--ink);opacity:.75}
+.apptop{display:flex;justify-content:space-between;align-items:center;padding:8px 16px 10px}
+.apptop .t{font-family:'Fraunces',serif;font-size:14px;font-weight:500}
+.apptop .i{width:15px;height:2px;background:var(--ink);opacity:.4;border-radius:2px;position:relative}
+.apptop .i::before,.apptop .i::after{content:"";position:absolute;left:0;width:15px;height:2px;
+  background:var(--ink);border-radius:2px}
+.apptop .i::before{top:-4px}.apptop .i::after{top:4px}
+.avatar{width:19px;height:19px;border-radius:50%;background:rgba(58,143,136,.18)}
+.body{flex:1;padding:4px 15px 12px;overflow:hidden}
+.tabbar{display:flex;justify-content:space-around;align-items:center;padding:9px 0 13px;
+  border-top:1px solid rgba(58,143,136,.13);background:rgba(255,255,255,.5)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:'Poppins';font-size:8px;color:var(--muted)}
+.tab.on{color:var(--teal-deep)}
+.tab .g{width:15px;height:15px;border-radius:4px;background:currentColor;opacity:.28}
+.tab.on .g{opacity:.65}
+
+.qlabel{font-family:'Poppins';font-size:9px;font-weight:500;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);margin:12px 0 7px}
+.qtitle{font-family:'Fraunces',serif;font-size:17px;font-weight:500;line-height:1.22;margin-bottom:3px}
+.qsub{font-size:10.5px;line-height:1.45;color:#4C6D69;margin-bottom:12px}
+
+.scale{display:flex;gap:4px;margin-bottom:6px}
+.scale i{flex:1;height:7px;border-radius:99px;background:rgba(58,143,136,.15)}
+.scale i.f{background:var(--teal)}
+.scale.e i.f{background:var(--peach)}
+.scale.w i.f{background:var(--water)}
+.scaleft{display:flex;justify-content:space-between;font-size:8.5px;color:var(--muted);margin-bottom:13px}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.chip{font-size:9.5px;padding:5px 10px;border-radius:99px;
+  border:1px solid rgba(58,143,136,.28);color:#41625E;white-space:nowrap}
+.chip.on{background:var(--teal-deep);border-color:var(--teal-deep);color:var(--cream)}
+.chip.pk.on{background:var(--peach);border-color:var(--peach);color:#4A3524}
+
+.pcard{background:#fff;border:1px solid rgba(58,143,136,.14);border-radius:13px;padding:11px 12px;margin-bottom:8px}
+.pcard .h{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.pcard .h b{font-family:'Poppins';font-size:9px;font-weight:500;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted)}
+.pcard .h span{font-size:9px;color:var(--muted)}
+.pcard p{font-size:11px;line-height:1.4;color:var(--ink)}
+.pcard.warm{background:rgba(240,165,118,.12);border-color:rgba(240,165,118,.34)}
+.pcard.warm p{color:#4A3524}
+
+.tl{position:relative;padding-left:16px}
+.tl::before{content:"";position:absolute;left:4px;top:6px;bottom:6px;width:1.5px;
+  background:linear-gradient(180deg,rgba(58,143,136,.35),rgba(79,169,198,.35))}
+.tlrow{position:relative;margin-bottom:11px}
+.tlrow::before{content:"";position:absolute;left:-16px;top:4px;width:9px;height:9px;
+  border-radius:50%;background:var(--cream);border:2px solid var(--teal)}
+.tlrow.pk::before{border-color:var(--peach)}
+.tlrow.wt::before{border-color:var(--water)}
+.tlrow b{display:block;font-family:'Poppins';font-size:9px;font-weight:500;color:var(--muted);margin-bottom:2px}
+.tlrow p{font-size:10.5px;line-height:1.35;color:var(--ink)}
+
+.bars{display:flex;align-items:flex-end;gap:5px;height:56px;margin:10px 0 8px}
+.bars i{flex:1;border-radius:4px 4px 2px 2px;background:var(--teal);opacity:.75}
+
+.btnfull{margin-top:8px;text-align:center;background:var(--teal-deep);color:var(--cream);
+  font-family:'Poppins';font-size:11px;font-weight:500;padding:10px;border-radius:99px}
+
+/* ---------- how it works ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:44px}
+.step{position:relative}
+.num{font-family:'Fraunces',serif;font-weight:300;font-size:148px;line-height:.7;
+  color:var(--teal);opacity:.12;position:absolute;top:-42px;left:-14px;z-index:0;pointer-events:none}
+.stepphone{position:relative;z-index:1;display:flex;justify-content:center;margin-bottom:30px}
+.step h3{font-family:'Fraunces',serif;font-weight:500;font-size:25px;margin-bottom:5px;letter-spacing:-.01em}
+.step .role{font-family:'Poppins';font-size:11px;font-weight:500;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--teal-deep);margin-bottom:11px}
+.step p{font-size:15.5px;line-height:1.62;color:#3D5C58}
+
+/* ---------- built for ---------- */
+.forreal{background:var(--ink);color:#DCE9E7}
+.forreal h2{color:var(--cream)}
+.forreal h2 em{color:var(--peach)}
+.forreal .kicker{color:var(--peach)}
+.forreal .kicker::before{background:var(--peach)}
+.forreal .subhead{color:#A9C4C0}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.rcard{border:1px solid rgba(220,233,231,.16);border-radius:20px;padding:30px 30px 28px;
+  background:rgba(255,255,255,.035);transition:background .4s,border-color .4s,transform .4s}
+.rcard:hover{background:rgba(255,255,255,.07);border-color:rgba(240,165,118,.4);transform:translateY(-3px)}
+.rcard h4{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:23px;
+  color:var(--cream);margin-bottom:10px;line-height:1.2}
+.rcard p{font-size:15px;line-height:1.6;color:#A9C4C0}
+
+/* ---------- timeline ---------- */
+.tlwrap{display:grid;grid-template-columns:1fr 300px;gap:64px;align-items:start}
+.bigtl{position:relative;padding-left:34px}
+.bigtl::before{content:"";position:absolute;left:8px;top:10px;bottom:10px;width:2px;
+  background:linear-gradient(180deg,rgba(58,143,136,.4),rgba(240,165,118,.4),rgba(79,169,198,.4))}
+.moment{position:relative;padding:22px 0}
+.moment::before{content:"";position:absolute;left:-31px;top:28px;width:14px;height:14px;
+  border-radius:50%;background:var(--paper);border:2.5px solid var(--teal);
+  transition:transform .5s,border-color .5s}
+.moment.pk::before{border-color:var(--peach)}
+.moment.wt::before{border-color:var(--water)}
+.moment.in::before{transform:scale(1.25)}
+.moment time{font-family:'Poppins';font-size:12px;font-weight:500;letter-spacing:.09em;
+  color:var(--muted);display:block;margin-bottom:6px}
+.moment h5{font-family:'Fraunces',serif;font-weight:500;font-size:21px;margin-bottom:5px}
+.moment p{font-size:15px;line-height:1.55;color:#3D5C58;max-width:40ch}
+.aside{position:sticky;top:80px;background:#fff;border:1px solid rgba(58,143,136,.16);
+  border-radius:20px;padding:26px 24px}
+.aside .kicker{margin-bottom:14px}
+.aside p{font-size:15px;line-height:1.6;color:#3D5C58}
+.aside .note{margin-top:16px;padding-top:14px;border-top:1px solid rgba(58,143,136,.16);
+  font-size:12.5px;font-style:italic;color:var(--muted)}
+
+/* ---------- privacy ---------- */
+.privacy{background:linear-gradient(170deg,#EFF5F3,#F6F1EA)}
+.plist{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 40px;margin-top:8px}
+.pitem{display:flex;gap:12px;padding:15px 0;border-bottom:1px solid rgba(58,143,136,.14)}
+.pitem span{width:6px;height:6px;border-radius:50%;background:var(--teal);margin-top:8px;flex:none}
+.pitem div b{display:block;font-family:'Poppins';font-size:14.5px;font-weight:500;margin-bottom:3px}
+.pitem div p{font-size:14px;line-height:1.5;color:#4C6D69}
+.disclaim{margin-top:34px;font-size:13px;font-style:italic;color:var(--muted);max-width:60ch}
+
+/* ---------- waitlist ---------- */
+.final{background:var(--teal-deep);color:var(--cream);text-align:center}
+.final h2{color:var(--cream);max-width:none}
+.final .sechead{margin:0 auto 34px;text-align:center;max-width:22ch}
+.final .kicker{color:rgba(251,247,242,.75);justify-content:center}
+.final .kicker::before{background:rgba(251,247,242,.5)}
+.final .lead{font-size:19px;line-height:1.6;color:rgba(251,247,242,.86);max-width:46ch;margin:0 auto 36px}
+.cta{display:inline-block;font-family:'Poppins';font-size:16px;font-weight:500;
+  background:var(--cream);color:var(--ink);padding:17px 42px;border-radius:99px;
+  text-decoration:none;transition:transform .25s,box-shadow .25s}
+.cta:hover{transform:translateY(-3px);box-shadow:0 16px 30px -14px rgba(0,0,0,.4)}
+.finalnote{margin-top:20px;font-size:13.5px;color:rgba(251,247,242,.6)}
+
+@media (max-width:1000px){
+  section{padding:80px 22px}
+  .steps{grid-template-columns:1fr;gap:64px}
+  .num{font-size:110px;top:-30px}
+  .cards{grid-template-columns:1fr}
+  .tlwrap{grid-template-columns:1fr;gap:36px}
+  .aside{position:static}
+  .plist{grid-template-columns:1fr;gap:0}
+  .sechead{margin-bottom:48px}
+}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}*{transition-duration:1ms!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section>
+  <div class="inner">
+    <div class="sechead rv">
+      <div class="kicker">How it works</div>
+      <h2>Notice what your body is <em>telling you.</em></h2>
+      <p class="subhead">Three moments. No calorie fields, no goals to miss, no plate to clean.</p>
+    </div>
+
+    <div class="steps">
+
+      <!-- STEP 1 -->
+      <div class="step rv">
+        <div class="num">1</div>
+        <div class="stepphone">
+          <div class="phone"><div class="notch"></div><div class="screen">
+            <div class="statusbar"><span>9:41</span><span>▪▪▪ ⌁</span></div>
+            <div class="apptop"><div class="i"></div><div class="t">Before eating</div><div class="avatar"></div></div>
+            <div class="body">
+              <div class="qtitle">How are you arriving?</div>
+              <div class="qsub">A quick read before the first bite.</div>
+
+              <div class="qlabel">Hunger</div>
+              <div class="scale"><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="scaleft"><span>Not at all</span><span>2 / 10</span></div>
+
+              <div class="qlabel">Energy</div>
+              <div class="scale e"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="scaleft"><span>Slow start</span><span>4 / 10</span></div>
+
+              <div class="qlabel">Last had something</div>
+              <div class="chips">
+                <div class="chip">&lt; 1 hr</div><div class="chip on">4 hrs ago</div><div class="chip">Yesterday</div>
+              </div>
+
+              <div class="qlabel">Mood</div>
+              <div class="chips">
+                <div class="chip pk on">Foggy</div><div class="chip">Calm</div><div class="chip">Rushed</div><div class="chip">Tense</div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab on"><div class="g"></div>Today</div>
+              <div class="tab"><div class="g"></div>History</div>
+              <div class="tab"><div class="g"></div>Trends</div>
+              <div class="tab"><div class="g"></div>You</div>
+            </div>
+          </div></div>
+        </div>
+        <div class="role">Check in</div>
+        <h3>Notice how you feel</h3>
+        <p>Hunger, energy, hydration, mood, and anything your body is doing. Thirty seconds, before anything is on the plate.</p>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step rv">
+        <div class="num">2</div>
+        <div class="stepphone">
+          <div class="phone"><div class="notch"></div><div class="screen">
+            <div class="statusbar"><span>9:58</span><span>▪▪▪ ⌁</span></div>
+            <div class="apptop"><div class="i"></div><div class="t">After eating</div><div class="avatar"></div></div>
+            <div class="body">
+              <div class="qtitle">Pause for a moment.</div>
+              <div class="qsub">What are you noticing?</div>
+
+              <div class="qlabel">How much you managed</div>
+              <div class="chips">
+                <div class="chip on">A few bites</div><div class="chip">¼</div><div class="chip">½</div>
+                <div class="chip">¾</div><div class="chip">All of it</div>
+              </div>
+
+              <div class="qlabel">Fullness now</div>
+              <div class="scale"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></div>
+              <div class="scaleft"><span>Getting close</span><span>8 / 10</span></div>
+
+              <div class="qlabel">Body notes</div>
+              <div class="chips">
+                <div class="chip on">Bloated</div><div class="chip">Comfortable</div>
+                <div class="chip on">Tired</div><div class="chip">Queasy</div><div class="chip">Still hungry</div>
+              </div>
+
+              <div class="pcard warm">
+                <div class="h"><b>Follow up</b><span>in 45 min</span></div>
+                <p>We'll check back once. You can turn this off any time.</p>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab on"><div class="g"></div>Today</div>
+              <div class="tab"><div class="g"></div>History</div>
+              <div class="tab"><div class="g"></div>Trends</div>
+              <div class="tab"><div class="g"></div>You</div>
+            </div>
+          </div></div>
+        </div>
+        <div class="role">Eat and observe</div>
+        <h3>Stay with your body</h3>
+        <p>Log what you actually managed, not what you planned. Four bites is a complete entry. So is stopping.</p>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step rv">
+        <div class="num">3</div>
+        <div class="stepphone">
+          <div class="phone"><div class="notch"></div><div class="screen">
+            <div class="statusbar"><span>7:12</span><span>▪▪▪ ⌁</span></div>
+            <div class="apptop"><div class="i"></div><div class="t">Patterns</div><div class="avatar"></div></div>
+            <div class="body">
+              <div class="qlabel">Last 14 days</div>
+              <div class="qtitle" style="margin-bottom:8px">What you recorded</div>
+
+              <div class="bars">
+                <i style="height:42%"></i><i style="height:70%"></i><i style="height:26%"></i>
+                <i style="height:58%"></i><i style="height:34%"></i><i style="height:80%"></i>
+                <i style="height:48%"></i><i style="height:22%"></i><i style="height:64%"></i>
+                <i style="height:38%"></i>
+              </div>
+              <div class="scaleft"><span>Portion completed</span><span>Avg. just under ½</span></div>
+
+              <div class="pcard">
+                <div class="h"><b>Recorded</b><span>14 days</span></div>
+                <p>Fullness ratings were highest at evening meals on 9 of 14 days.</p>
+              </div>
+              <div class="pcard">
+                <div class="h"><b>Recorded</b><span>14 days</span></div>
+                <p>Blended and liquid items were completed more often than solid items.</p>
+              </div>
+              <div class="pcard">
+                <div class="h"><b>Recorded</b><span>14 days</span></div>
+                <p>Discomfort was noted 6 times, 5 of them after 6 PM.</p>
+              </div>
+
+              <div class="btnfull">Create summary for my appointment</div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><div class="g"></div>Today</div>
+              <div class="tab"><div class="g"></div>History</div>
+              <div class="tab on"><div class="g"></div>Trends</div>
+              <div class="tab"><div class="g"></div>You</div>
+            </div>
+          </div></div>
+        </div>
+        <div class="role">Understand your patterns</div>
+        <h3>See what you've been living</h3>
+        <p>Plain counts of what you recorded, never conclusions about why. Export it as a summary you can hand to a doctor.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ BUILT FOR REAL EXPERIENCES ============ -->
+<section class="forreal">
+  <div class="inner">
+    <div class="sechead rv">
+      <div class="kicker">Built for real experiences</div>
+      <h2>For the days that <em>don't fit</em> the app you already tried.</h2>
+    </div>
+    <div class="cards">
+      <div class="rcard rv">
+        <h4>When you rarely feel hungry</h4>
+        <p>Track what you were able to eat and how your body responded, without a target sitting there unmet.</p>
+      </div>
+      <div class="rcard rv">
+        <h4>When you get full in three bites</h4>
+        <p>Record portions, how quickly fullness arrived, discomfort, and how long it took to pass.</p>
+      </div>
+      <div class="rcard rv">
+        <h4>When your energy makes no sense</h4>
+        <p>Log energy on its own, alongside hydration, movement, sleep, and meals, and see them side by side.</p>
+      </div>
+      <div class="rcard rv">
+        <h4>When you need to explain the whole picture</h4>
+        <p>Walk into an appointment with an organized record instead of trying to remember three weeks on the spot.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ A DAY IN FEELFED ============ -->
+<section>
+  <div class="inner">
+    <div class="sechead rv">
+      <div class="kicker">A day in FeelFed</div>
+      <h2>Ordinary days are what make a <em>pattern readable.</em></h2>
+    </div>
+
+    <div class="tlwrap">
+      <div class="bigtl">
+        <div class="moment rv"><time>9:00 AM</time>
+          <h5>No appetite, water only</h5>
+          <p>Energy logged at 3. Nothing eaten yet. Recorded, not flagged.</p></div>
+
+        <div class="moment pk rv"><time>12:30 PM</time>
+          <h5>Small meal, a few bites</h5>
+          <p>Fullness climbed from 2 to 8 within ten minutes. Bloating noted.</p></div>
+
+        <div class="moment wt rv"><time>1:15 PM</time>
+          <h5>Follow-up check-in</h5>
+          <p>Still uncomfortable. Energy unchanged. One tap, no typing required.</p></div>
+
+        <div class="moment rv"><time>3:15 PM</time>
+          <h5>Short walk, ten minutes</h5>
+          <p>Energy after: 5. Marked as completed, shortened, or skipped, all equally valid.</p></div>
+
+        <div class="moment wt rv"><time>6:00 PM</time>
+          <h5>Smoothie, finished it</h5>
+          <p>Comfortable fullness. Logged as blended. Hydration up for the day.</p></div>
+      </div>
+
+      <div class="aside rv">
+        <div class="kicker">At the end of the day</div>
+        <p>FeelFed adds up what you recorded and nothing else. Five entries, three textures, two symptoms, one walk.</p>
+        <p class="note">No score. No streak. No note telling you what any of it means.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRIVACY ============ -->
+<section class="privacy">
+  <div class="inner">
+    <div class="sechead rv">
+      <div class="kicker">Privacy</div>
+      <h2>Your experiences <em>belong to you.</em></h2>
+      <p class="subhead">This is health-adjacent information about your body. It's being designed accordingly, from the first line of code.</p>
+    </div>
+    <div class="plist">
+      <div class="pitem rv"><span></span><div><b>Only you see your records</b>
+        <p>No public profile, ever, by default. Nothing is shared with a doctor unless you send it.</p></div></div>
+      <div class="pitem rv"><span></span><div><b>Never sold, never targeted</b>
+        <p>Your food, weight, symptoms, and activity will not be sold or used to target advertising.</p></div></div>
+      <div class="pitem rv"><span></span><div><b>Export it or delete it</b>
+        <p>Take your full history with you, correct it, or remove your account entirely.</p></div></div>
+      <div class="pitem rv"><span></span><div><b>Plain language, no scoring</b>
+        <p>No grades on your meals, no shame mechanics, no conclusions drawn about your body.</p></div></div>
+    </div>
+    <p class="disclaim rv">FeelFed is a personal wellness journal. It does not diagnose, treat, or prevent any condition, and it does not determine why you feel the way you do. It records what you tell it.</p>
+  </div>
+</section>
+
+<!-- ============ WAITLIST ============ -->
+<section class="final">
+  <div class="inner">
+    <div class="sechead rv">
+      <div class="kicker">Early access</div>
+      <h2>Your body is already talking.</h2>
+    </div>
+    <p class="lead rv">FeelFed helps you write it down. Join the early access list and follow the build as it becomes a real app.</p>
+    <a class="cta rv" href="#">Join the early access list</a>
+    <p class="finalnote rv">No spam. You'll hear from me when there's something real to show.</p>
+  </div>
+</section>
+
+<script>
+(function(){
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('in');}
+    });
+  },{threshold:.16,rootMargin:'0px 0px -60px 0px'});
+  var els=document.querySelectorAll('.rv');
+  els.forEach(function(el,i){
+    el.style.transitionDelay=((i%4)*70)+'ms';
+    io.observe(el);
+  });
+})();
+</script>
+</body>
+</html>

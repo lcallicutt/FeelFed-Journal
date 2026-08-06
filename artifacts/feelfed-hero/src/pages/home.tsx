@@ -8,6 +8,11 @@ import StatusChips from "@/components/StatusChips";
 import MomentHistory from "@/components/MomentHistory";
 import WaitlistModal from "@/components/WaitlistModal";
 import TrustBadges from "@/components/TrustBadges";
+import HowItWorks from "@/components/sections/HowItWorks";
+import BuiltForReal from "@/components/sections/BuiltForReal";
+import DayInFeelFed from "@/components/sections/DayInFeelFed";
+import Privacy from "@/components/sections/Privacy";
+import Waitlist from "@/components/sections/Waitlist";
 import { useGetMoments } from "@workspace/api-client-react";
 import { getDeviceId } from "@/lib/deviceId";
 
@@ -248,6 +253,17 @@ export default function Home() {
         <div className="hidden lg:flex lg:flex-col">
           {interactivePanel}
         </div>
+      </div>
+
+      {/* ── Below-the-fold marketing sections ─────────────────────────────
+         Sit above the fixed ambient layers (z-[2]); the cream section
+         backgrounds cover the ambient canvas as the visitor scrolls. */}
+      <div className="ff-sections relative z-[2]" style={{ background: "#FBF7F2" }}>
+        <HowItWorks />
+        <BuiltForReal />
+        <DayInFeelFed />
+        <Privacy />
+        <Waitlist onJoin={() => setWaitlistOpen(true)} />
       </div>
 
       <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />

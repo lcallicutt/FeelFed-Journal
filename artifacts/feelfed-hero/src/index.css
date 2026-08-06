@@ -14,3 +14,68 @@
   50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
+
+/* ── Below-the-fold marketing sections ─────────────────────────────────── */
+/* "How it works" — three columns on desktop, one below 1000px (matches mockup). */
+.ff-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 44px;
+}
+/* "Built for real experiences" — two columns on desktop, one below 1000px. */
+.ff-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+/* "A day in FeelFed" — two-column layout with a sticky aside on desktop,
+ * collapsing to a single column below 1000px (matches the mockup). */
+.ff-tlwrap {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 64px;
+  align-items: start;
+}
+.ff-aside {
+  position: sticky;
+  top: 80px;
+}
+/* "Privacy" list — two columns on desktop, single column stacked on mobile. */
+.ff-plist {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 40px;
+  margin-top: 8px;
+}
+
+@media (max-width: 1000px) {
+  .ff-steps {
+    grid-template-columns: 1fr;
+    gap: 64px;
+  }
+  .ff-cards {
+    grid-template-columns: 1fr;
+  }
+  .ff-tlwrap {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .ff-aside {
+    position: static;
+    top: auto;
+  }
+  .ff-plist {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+/* Reduced-motion visitors: the reveal hook already shows content immediately;
+ * this collapses any remaining transitions so nothing animates. */
+@media (prefers-reduced-motion: reduce) {
+  .ff-sections * {
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    animation-duration: 1ms !important;
+  }
+}
