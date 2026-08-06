@@ -80,6 +80,31 @@ export default function WaitlistModal({ open, onClose }: WaitlistModalProps) {
     return () => window.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
+  // Focus trap: keep Tab / Shift+Tab within the modal panel
+  const handleModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Tab") return;
+    const panel = e.currentTarget;
+    const focusable = Array.from(
+      panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter((el) => !el.closest('[aria-hidden="true"]'));
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
@@ -101,7 +126,11 @@ export default function WaitlistModal({ open, onClose }: WaitlistModalProps) {
     >
       {/* Modal panel */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="waitlist-modal-title"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={handleModalKeyDown}
         className="relative my-auto w-full max-w-md rounded-2xl bg-card p-8 shadow-2xl"
         data-testid="modal-waitlist"
       >
@@ -122,7 +151,7 @@ export default function WaitlistModal({ open, onClose }: WaitlistModalProps) {
             <div className="mb-5 flex h-13 w-13 items-center justify-center rounded-full bg-primary/10 text-primary text-2xl">
               ✓
             </div>
-            <h2 className="font-serif text-2xl font-medium text-foreground mb-2">
+            <h2 id="waitlist-modal-title" className="font-serif text-2xl font-medium text-foreground mb-2">
               You're on the list
             </h2>
             <p className="font-mono text-sm leading-relaxed text-muted-foreground mb-7">
@@ -139,7 +168,7 @@ export default function WaitlistModal({ open, onClose }: WaitlistModalProps) {
             <span className="font-sans mb-3 block text-[10px] uppercase tracking-widest text-primary/75">
               Coming soon to iOS
             </span>
-            <h2 className="font-serif mb-2 text-2xl font-medium leading-snug text-foreground">
+            <h2 id="waitlist-modal-title" className="font-serif mb-2 text-2xl font-medium leading-snug text-foreground">
               Join the early access list
             </h2>
             <p className="font-mono mb-6 text-sm leading-relaxed text-muted-foreground">
