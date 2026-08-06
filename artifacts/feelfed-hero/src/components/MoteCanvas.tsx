@@ -100,13 +100,13 @@ export default function MoteCanvas({ fullness, energy, hydration }: MoteCanvasPr
         // Size + alpha driven by the OWNING ring's current value, so raising
         // any ring visibly grows its motes. Floors keep low values present but small.
         const ringVal = vals[mote.ring] / 10; // 0–1
-        const sizeMult = 0.35 + ringVal * 0.75;
+        const sizeMult = 0.5 + ringVal * 0.6;
         const radius = mote.baseRadius * sizeMult;
 
         // Fade near top
         const topFade = Math.max(0, mote.y / (canvas.height * 0.3));
         const lifeOpacity = Math.max(0, 1 - mote.life * 0.8);
-        const alpha = mote.opacity * topFade * lifeOpacity * (0.25 + ringVal * 0.75);
+        const alpha = mote.opacity * topFade * lifeOpacity * (0.5 + ringVal * 0.5);
 
         if (alpha < 0.01 || mote.y < -20) return false;
 
