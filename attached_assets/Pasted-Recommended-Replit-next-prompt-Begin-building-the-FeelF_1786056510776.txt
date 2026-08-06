@@ -1,0 +1,40 @@
+Recommended Replit next prompt
+Begin building the FeelFed mobile app prototype in the project canvas using the same design system as the existing marketing website. Do not redesign the website or replace the current visual language.
+Create a mobile-first app shell with four bottom-navigation areas:
+Today
+History
+Trends
+You
+Build the following connected prototype flow:
+Today dashboard
+Before Eating Check-In
+During Eating Check-In
+After Eating Reflection
+Scheduled Follow-Up Check-In
+Daily Timeline
+Fourteen-Day Patterns
+The Today dashboard should allow a user to begin a check-in, log hydration, record energy, add movement, or review today’s entries.
+The Before Eating Check-In should include:
+Hunger from 0–10
+Energy from 0–10
+Hydration status
+Time since the user last ate
+Mood
+Optional body sensations
+The During Eating Check-In should include:
+Amount eaten using options such as a few bites, one-quarter, one-half, three-quarters, or all
+Current fullness
+Comfort level
+Optional pause reminder
+The After Eating Reflection should include:
+Amount eaten
+Fullness
+Satisfaction
+Energy change
+Body sensations
+Food texture such as liquid, blended, soft, or solid
+Optional follow-up reminder in 30, 45, 60, or 90 minutes
+The Daily Timeline should combine meals, hydration, mood, energy, symptoms, and movement in chronological order.
+The Trends screen should display only descriptive patterns based on what the user recorded. Do not assign health scores, grades, streaks, calorie goals, weight-loss goals, warnings, diagnoses, or conclusions.
+Use FeelFed’s existing cream, teal, peach, muted blue, and deep green palette. Preserve the editorial typography, rounded controls, generous spacing, and calm visual tone from the website. Use plain, supportive language and make partial entries valid. The app must never imply that finishing a meal is better than eating only a few bites.
+Build the screens as reusable components with realistic sample data. Add subtle transitions between screens and ensure the prototype works cleanly at common iPhone and Android mobile widths.
