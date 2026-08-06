@@ -1,0 +1,11 @@
+# FeelFed
+
+> A gentle iOS food and body-signal journal for people managing low appetite, early fullness, energy changes, and hydration.
+
+FeelFed lets you log what actually happened — four bites, a smoothie day, or no appetite at all — without grades, streaks, or guilt. Users track fullness, energy, and hydration on a 1–10 scale and can generate structured summaries for healthcare appointments.
+
+## Status
+Currently in early access / pre-launch. iOS app coming soon.
+
+## Contact
+Join the early access list at https://feelfed.app/
