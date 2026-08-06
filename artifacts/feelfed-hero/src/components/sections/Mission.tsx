@@ -42,7 +42,7 @@ export default function Mission() {
             }}
           >
             Built because{" "}
-            <em style={{ fontStyle: "italic", fontWeight: 500, color: C.tealDeep }}>
+            <em style={{ fontStyle: "italic", fontWeight: 500, color: C.peach }}>
               "everything looks normal"
             </em>{" "}
             does not always tell the whole story.
