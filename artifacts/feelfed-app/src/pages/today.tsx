@@ -22,7 +22,7 @@ import { toast } from "@workspace/feelfed-ds/hooks/use-toast";
 import { useEntriesForDay, useNow, useOutstandingFollowUps } from "@/hooks/use-store";
 import { store, nextId } from "@/lib/store";
 import { HYDRATION_LABELS, type HydrationStatus } from "@/lib/types";
-import { dayLabel, dueInLabel, timeOf } from "@/lib/format";
+import { dayLabel, dueInLabel, entryTitle, timeOf } from "@/lib/format";
 import { TimelineEntry } from "@/components/timeline-entry";
 import { ChoiceField, ScaleField } from "@/components/form-controls";
 import { FullnessRingHero } from "@/components/fullness-ring-hero";
@@ -39,6 +39,10 @@ export default function TodayPage() {
   const [energyOpen, setEnergyOpen] = useState(false);
   const [hydration, setHydration] = useState<HydrationStatus>("steady");
   const [energy, setEnergy] = useState(5);
+
+  const lastEntry = entries.length > 0
+    ? entries.reduce((a, b) => (a.at > b.at ? a : b))
+    : undefined;
 
   const now = new Date();
   const greeting =
@@ -57,18 +61,23 @@ export default function TodayPage() {
 
   return (
     <div className="px-4 pt-5">
-      {/* Fullness-ring hero — the first thing you see on Today */}
-      <div className="mb-5">
-        <FullnessRingHero />
-      </div>
-
       {/* Greeting header */}
-      <div className="mb-5">
+      <div className="mb-4">
         <p className="font-mono text-sm text-muted-foreground">{dayLabel(today)}</p>
         <h1 className="font-serif text-3xl leading-tight mt-0.5">{greeting}, Sam.</h1>
         <p className="font-mono text-sm text-muted-foreground mt-1.5">
           Record whatever actually happened. A few bites counts.
         </p>
+        {lastEntry && (
+          <p className="font-mono text-xs text-muted-foreground mt-2" data-testid="text-last-logged">
+            Last logged {timeOf(lastEntry.at)} · {entryTitle(lastEntry.kind)}
+          </p>
+        )}
+      </div>
+
+      {/* Fullness-ring hero */}
+      <div className="mb-5">
+        <FullnessRingHero />
       </div>
 
       {/* Primary CTA */}
