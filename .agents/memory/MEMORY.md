@@ -1,3 +1,4 @@
 - [FeelFed project overview](feelfed-overview.md) — design system + hero screen architecture, key decisions, asset paths
 - [JSX generic args break vite babel](jsx-generic-args.md) — never write `<Comp<Type>>` in .tsx here; cast in callbacks instead
 - [Artifact registration for pre-built dirs](artifact-registration.md) — if a subagent builds artifact files first, register via createArtifact then overlay; verifyAndReplaceArtifactToml can't create new artifacts
+- [E2E testing fallback](e2e-testing-fallback.md) — testing subagent kind unavailable here; run playwright-core with nix chromium from .agents/e2e/ instead
