@@ -474,12 +474,12 @@ export default function DraggableRings({
             const by = k.y + (dy / len) * 24;
             return (
               <g className="feelfed-hint-float" style={{ pointerEvents: "none" }}>
-                <rect x={bx - 38} y={by - 14} width={76} height={28} rx={14}
+                <rect x={bx - 54} y={by - 14} width={108} height={28} rx={14}
                   fill="rgba(255,255,255,0.95)" stroke="rgba(58,143,136,0.35)" strokeWidth={1} />
                 <text x={bx} y={by + 1} fill="#1F4E49" fontSize={12}
                   fontFamily="Poppins, sans-serif" fontWeight="600"
                   textAnchor="middle" dominantBaseline="middle">
-                  Drag me
+                  Drag the rings
                 </text>
               </g>
             );

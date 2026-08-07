@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import {
   Droplet,
@@ -21,7 +21,7 @@ import {
 import { toast } from "@workspace/feelfed-ds/hooks/use-toast";
 import { useEntriesForDay, useNow, useOutstandingFollowUps } from "@/hooks/use-store";
 import { store, nextId } from "@/lib/store";
-import { HYDRATION_LABELS, type HydrationStatus } from "@/lib/types";
+import { HYDRATION_LABELS, type Entry, type HydrationStatus } from "@/lib/types";
 import { dayLabel, dueInLabel, entryTitle, timeOf } from "@/lib/format";
 import { TimelineEntry } from "@/components/timeline-entry";
 import { ChoiceField, ScaleField } from "@/components/form-controls";
@@ -34,6 +34,35 @@ export default function TodayPage() {
   // All outstanding follow-ups across every day, so one scheduled across
   // midnight still surfaces here.
   const followUps = useOutstandingFollowUps();
+
+  // Track the most recently added entry so we can softly highlight it and
+  // let "Last logged" scroll to it.
+  const [highlightId, setHighlightId] = useState<string | number | null>(null);
+  const knownIds = useRef<Set<Entry["id"]> | null>(null);
+  useEffect(() => {
+    if (knownIds.current === null) {
+      knownIds.current = new Set(entries.map((e) => e.id));
+      return;
+    }
+    const fresh = entries.filter((e) => !knownIds.current!.has(e.id));
+    for (const e of entries) knownIds.current.add(e.id);
+    if (fresh.length > 0) {
+      const newest = fresh[fresh.length - 1]!;
+      setHighlightId(newest.id);
+      const t = setTimeout(() => setHighlightId(null), 1800);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [entries]);
+
+  function scrollToEntry(id: Entry["id"]) {
+    const el = document.getElementById(`entry-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setHighlightId(id);
+      setTimeout(() => setHighlightId((cur) => (cur === id ? null : cur)), 1800);
+    }
+  }
 
   const [hydrationOpen, setHydrationOpen] = useState(false);
   const [energyOpen, setEnergyOpen] = useState(false);
@@ -69,9 +98,14 @@ export default function TodayPage() {
           Record whatever actually happened. A few bites counts.
         </p>
         {lastEntry && (
-          <p className="font-mono text-xs text-muted-foreground mt-2" data-testid="text-last-logged">
+          <button
+            type="button"
+            onClick={() => scrollToEntry(lastEntry.id)}
+            className="font-mono text-xs text-muted-foreground mt-2 underline decoration-dotted underline-offset-4 hover:text-foreground transition-colors text-left"
+            data-testid="text-last-logged"
+          >
             Last logged {timeOf(lastEntry.at)} · {entryTitle(lastEntry.kind)}
-          </p>
+          </button>
         )}
       </div>
 
@@ -176,7 +210,12 @@ export default function TodayPage() {
       ) : (
         <ul className="pl-0.5">
           {entries.map((entry, i) => (
-            <TimelineEntry key={entry.id} entry={entry} showLine={i < entries.length - 1} />
+            <TimelineEntry
+              key={entry.id}
+              entry={entry}
+              showLine={i < entries.length - 1}
+              highlighted={entry.id === highlightId}
+            />
           ))}
         </ul>
       )}

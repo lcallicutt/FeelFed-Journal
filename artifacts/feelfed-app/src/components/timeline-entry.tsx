@@ -36,11 +36,25 @@ const ICONS: Record<Entry["kind"], typeof Apple> = {
   moment: CircleDot,
 };
 
-export function TimelineEntry({ entry, showLine = true }: { entry: Entry; showLine?: boolean }) {
+export function TimelineEntry({
+  entry,
+  showLine = true,
+  highlighted = false,
+}: {
+  entry: Entry;
+  showLine?: boolean;
+  highlighted?: boolean;
+}) {
   const Icon = ICONS[entry.kind];
 
   return (
-    <li className="relative flex gap-3" data-testid={`row-entry-${entry.id}`}>
+    <li
+      id={`entry-${entry.id}`}
+      className={`relative flex gap-3 rounded-xl transition-colors duration-700 ${
+        highlighted ? "bg-primary/10 -mx-2 px-2" : "bg-transparent"
+      }`}
+      data-testid={`row-entry-${entry.id}`}
+    >
       <div className="flex flex-col items-center">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
           <Icon className="h-4 w-4" />
