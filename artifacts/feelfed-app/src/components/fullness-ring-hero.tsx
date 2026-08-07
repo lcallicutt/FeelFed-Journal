@@ -4,6 +4,7 @@ import { Button } from "@workspace/feelfed-ds/components/ui/button";
 import { toast } from "@workspace/feelfed-ds/hooks/use-toast";
 import { cn } from "@workspace/feelfed-ds/lib/utils";
 import DraggableRings, { ringColor } from "@/components/draggable-rings";
+import AmbientBubbles from "@/components/ambient-bubbles";
 import {
   fullnessPhrase,
   energyPhrase,
@@ -87,10 +88,11 @@ export function FullnessRingHero() {
 
   return (
     <section
-      className="rounded-3xl border border-primary/15 bg-gradient-to-b from-secondary/10 to-background px-4 pt-5 pb-4"
+      className="relative overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-b from-secondary/10 to-background px-4 pt-5 pb-4"
       data-testid="section-ring-hero"
       aria-label="How are you right now"
     >
+      <AmbientBubbles fullness={fullness} energy={energy} hydration={hydration} />
       <div className="text-center mb-1">
         <p className="font-sans text-[0.7rem] uppercase tracking-widest text-primary/70">
           How are you right now
