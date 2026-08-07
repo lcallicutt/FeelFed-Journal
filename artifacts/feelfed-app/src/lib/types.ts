@@ -13,7 +13,8 @@ export type EntryKind =
   | "hydration"
   | "energy"
   | "movement"
-  | "followup";
+  | "followup"
+  | "moment";
 
 export interface BaseEntry {
   id: string;
@@ -78,6 +79,15 @@ export interface FollowUpEntry extends BaseEntry {
   sensations?: string[];
 }
 
+/** A quick "how am I right now" snapshot from the fullness-ring hero. */
+export interface MomentEntry extends BaseEntry {
+  kind: "moment";
+  fullness: number; // 0-10
+  energy: number; // 0-10
+  hydration: number; // 0-10
+  reflection: string;
+}
+
 export type Entry =
   | BeforeEntry
   | DuringEntry
@@ -85,7 +95,8 @@ export type Entry =
   | HydrationEntry
   | EnergyEntry
   | MovementEntry
-  | FollowUpEntry;
+  | FollowUpEntry
+  | MomentEntry;
 
 export interface Profile {
   name: string;

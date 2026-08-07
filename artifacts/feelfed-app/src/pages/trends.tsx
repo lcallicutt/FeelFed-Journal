@@ -281,6 +281,14 @@ function computeStats(entries: Entry[]) {
       rec.hydSum += HYDRATION_SCALE[e.status];
       rec.hydN += 1;
     }
+    if (e.kind === "moment") {
+      rec.fullSum += e.fullness;
+      rec.fullN += 1;
+      rec.enSum += e.energy;
+      rec.enN += 1;
+      rec.hydSum += e.hydration;
+      rec.hydN += 1;
+    }
   }
   const daily = Array.from(dayMap.values())
     .sort((a, b) => a.date.getTime() - b.date.getTime())

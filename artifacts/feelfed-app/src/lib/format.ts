@@ -56,6 +56,8 @@ export function summarize(entry: Entry): string {
       return entry.completed
         ? `Follow-up · fullness ${entry.fullness ?? "—"}/10`
         : `Follow-up scheduled`;
+    case "moment":
+      return `Moment · fullness ${entry.fullness}/10, energy ${entry.energy}/10, hydration ${entry.hydration}/10`;
   }
 }
 
@@ -75,5 +77,7 @@ export function entryTitle(kind: Entry["kind"]): string {
       return "Movement";
     case "followup":
       return "Follow-up";
+    case "moment":
+      return "Moment";
   }
 }

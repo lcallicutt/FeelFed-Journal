@@ -25,6 +25,7 @@ import { HYDRATION_LABELS, type HydrationStatus } from "@/lib/types";
 import { dayLabel, dueInLabel, timeOf } from "@/lib/format";
 import { TimelineEntry } from "@/components/timeline-entry";
 import { ChoiceField, ScaleField } from "@/components/form-controls";
+import { FullnessRingHero } from "@/components/fullness-ring-hero";
 
 export default function TodayPage() {
   const entries = useEntriesForDay();
@@ -55,7 +56,12 @@ export default function TodayPage() {
   }
 
   return (
-    <div className="px-4 pt-6">
+    <div className="px-4 pt-5">
+      {/* Fullness-ring hero — the first thing you see on Today */}
+      <div className="mb-5">
+        <FullnessRingHero />
+      </div>
+
       {/* Greeting header */}
       <div className="mb-5">
         <p className="font-mono text-sm text-muted-foreground">{dayLabel(today)}</p>

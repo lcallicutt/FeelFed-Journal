@@ -6,6 +6,7 @@ import {
   Utensils,
   Clock3,
   Trash2,
+  CircleDot,
 } from "lucide-react";
 import { Button } from "@workspace/feelfed-ds/components/ui/button";
 import {
@@ -32,6 +33,7 @@ const ICONS: Record<Entry["kind"], typeof Apple> = {
   energy: Sparkles,
   movement: Footprints,
   followup: Clock3,
+  moment: CircleDot,
 };
 
 export function TimelineEntry({ entry, showLine = true }: { entry: Entry; showLine?: boolean }) {
