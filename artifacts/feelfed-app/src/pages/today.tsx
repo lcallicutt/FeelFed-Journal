@@ -97,15 +97,24 @@ export default function TodayPage() {
         <p className="font-mono text-sm text-muted-foreground mt-1.5">
           Record whatever actually happened. A few bites counts.
         </p>
-        {lastEntry && (
+        {lastEntry ? (
           <button
             type="button"
             onClick={() => scrollToEntry(lastEntry.id)}
             className="font-mono text-xs text-muted-foreground mt-2 underline decoration-dotted underline-offset-4 hover:text-foreground transition-colors text-left"
             data-testid="text-last-logged"
           >
-            Last logged {timeOf(lastEntry.at)} · {entryTitle(lastEntry.kind)}
+            {nowMs - new Date(lastEntry.at).getTime() < 60_000
+              ? `Last logged just now · ${entryTitle(lastEntry.kind)}`
+              : `Last logged ${timeOf(lastEntry.at)} · ${entryTitle(lastEntry.kind)}`}
           </button>
+        ) : (
+          <p
+            className="font-mono text-xs text-muted-foreground mt-2"
+            data-testid="text-last-logged"
+          >
+            Nothing recorded yet today
+          </p>
         )}
       </div>
 
@@ -201,9 +210,9 @@ export default function TodayPage() {
       {entries.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="font-serif text-lg">Nothing recorded yet</p>
+            <p className="font-serif text-lg">Nothing recorded yet today.</p>
             <p className="text-sm text-muted-foreground font-mono mt-1.5">
-              When something happens around eating, jot it here. There's no wrong entry.
+              Start wherever you are.
             </p>
           </CardContent>
         </Card>

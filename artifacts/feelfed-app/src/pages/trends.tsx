@@ -47,9 +47,9 @@ export default function TrendsPage() {
       {recent.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <p className="font-serif text-lg">Nothing to describe yet</p>
+            <p className="font-serif text-lg">Patterns will appear as you record more moments.</p>
             <p className="text-sm text-muted-foreground font-mono mt-1.5">
-              Patterns appear here as you record moments over the next couple of weeks.
+              Keep noting how things go and this fills in over the next couple of weeks.
             </p>
           </CardContent>
         </Card>

@@ -42,9 +42,9 @@ export default function HistoryPage() {
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-3">
               <CalendarDays className="h-6 w-6" />
             </span>
-            <p className="font-serif text-lg">Your timeline is empty</p>
+            <p className="font-serif text-lg">Your journal starts with your first check-in.</p>
             <p className="text-sm text-muted-foreground font-mono mt-1.5">
-              Record a moment from Today and it will show up here.
+              Anything you record on Today will appear here, grouped by day.
             </p>
             <Button asChild className="mt-4" data-testid="button-start-first">
               <Link href="/">Go to Today</Link>

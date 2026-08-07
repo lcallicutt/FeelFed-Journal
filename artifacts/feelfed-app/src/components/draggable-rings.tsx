@@ -173,8 +173,12 @@ export default function DraggableRings({
         b.ph += b.sp * 0.012 * (0.3 + h);
         if (b.ph > 1) b.ph = 0;
         const byRef = 244 - (244 - yRef - 4) * b.ph;
+        // Bubbles swell as the wheel fills so the bowl feels more alive the more
+        // you annotate. Radius grows with the hydration value (0.7x → ~1.9x).
+        const grow = 0.7 + h * 1.2;
         el.setAttribute("cx", String(b.x.toFixed(2)));
         el.setAttribute("cy", String(vpY(byRef).toFixed(2)));
+        el.setAttribute("r", (b.r * grow).toFixed(2));
         el.setAttribute("opacity", (Math.max(0, h - 0.35) * 1.4 * (1 - b.ph)).toFixed(3));
       });
 

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Apple,
   Droplet,
@@ -24,6 +25,7 @@ import type { Entry } from "@/lib/types";
 import { entryTitle, summarize, timeOf } from "@/lib/format";
 import { store } from "@/lib/store";
 import { toast } from "@workspace/feelfed-ds/hooks/use-toast";
+import { EntryDetailSheet } from "@/components/entry-detail-sheet";
 
 const ICONS: Record<Entry["kind"], typeof Apple> = {
   before: Utensils,
@@ -46,6 +48,7 @@ export function TimelineEntry({
   highlighted?: boolean;
 }) {
   const Icon = ICONS[entry.kind];
+  const [detailOpen, setDetailOpen] = useState(false);
 
   return (
     <li
@@ -64,7 +67,13 @@ export function TimelineEntry({
 
       <div className="flex-1 pb-5 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
+          {/* Tap the row body to open the detail sheet */}
+          <button
+            type="button"
+            onClick={() => setDetailOpen(true)}
+            className="min-w-0 text-left rounded-lg -m-1 p-1 transition-colors hover:bg-secondary/10"
+            data-testid={`button-open-entry-${entry.id}`}
+          >
             <div className="flex items-center gap-2">
               <span className="font-sans text-sm font-medium">{entryTitle(entry.kind)}</span>
               <span className="font-mono text-xs text-muted-foreground">{timeOf(entry.at)}</span>
@@ -75,7 +84,7 @@ export function TimelineEntry({
                 {entry.note}
               </p>
             ) : null}
-          </div>
+          </button>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -83,7 +92,8 @@ export function TimelineEntry({
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-muted-foreground shrink-0"
-                aria-label="Remove this moment"
+                aria-label="Delete this entry"
+                onClick={(e) => e.stopPropagation()}
                 data-testid={`button-delete-${entry.id}`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -91,28 +101,29 @@ export function TimelineEntry({
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Remove this moment?</AlertDialogTitle>
+                <AlertDialogTitle>Delete this moment?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This just removes it from your journal. There's no penalty — you can always add it
-                  again later.
+                  This will remove it from your journal.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel data-testid="button-cancel-delete">Keep it</AlertDialogCancel>
+                <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
                     store.removeEntry(entry.id);
-                    toast({ title: "Moment removed", description: "It's gone from your journal." });
+                    toast({ title: "Entry removed", description: "It's gone from your journal." });
                   }}
                   data-testid="button-confirm-delete"
                 >
-                  Remove
+                  Delete
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         </div>
       </div>
+
+      <EntryDetailSheet entry={entry} open={detailOpen} onOpenChange={setDetailOpen} />
     </li>
   );
 }

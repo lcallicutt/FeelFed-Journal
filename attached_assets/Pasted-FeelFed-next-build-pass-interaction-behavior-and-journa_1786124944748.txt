@@ -1,0 +1,105 @@
+FeelFed next build pass: interaction behavior and journal data integrity
+The Today screen design is in a good place. Do not redesign the overall layout or visual style. Keep the current hierarchy, colors, typography, wheel, cards, bottom navigation, and overall feel.
+Focus this pass on making recording behavior clear, reliable, and consistent across Today, History, and Trends.
+1. Improve “Record this moment” feedback
+When a user taps Record this moment:
+Save the current Fullness, Energy, and Hydration values as a new journal entry.
+Use the current local date and time.
+Immediately update the top line to:
+Last logged just now · Moment
+Change the button temporarily from:
+Record this moment
+to:
+✓ Moment recorded
+Keep the success state visible for about 2 seconds, then return the button to Record this moment.
+Add the new entry immediately to Today’s moments.
+Briefly highlight the newly created timeline entry so the user can visually see that it was saved.
+Do not automatically scroll the user unless necessary.
+2. Make “Last logged” dynamic
+The Last logged line at the top should always display the most recently recorded entry of any type.
+Examples:
+Last logged 10:20 PM · Moment
+Last logged 12:30 PM · Hydration
+Last logged 11:00 AM · Movement
+Last logged 9:05 AM · After eating
+If the user has not recorded anything today, show:
+Nothing recorded yet today
+This value should update immediately whenever any new entry is recorded.
+3. Update the wheel instruction
+Replace Drag me with:
+Adjust the rings
+Keep the label small and visually consistent with the current design.
+Each of the three rings should remain independently draggable.
+4. Use one source of truth for journal entries
+Today’s Moments and History should not contain separate duplicate datasets.
+All entries should come from the same journal-entry data source.
+When the user records:
+a Moment
+Hydration
+Energy
+Movement
+Before eating
+During eating
+After eating
+create one journal record.
+That same record should automatically appear in:
+Today, if it happened today
+History, under the correct date
+Trends, when the entry contains data used in trend calculations
+Do not manually maintain separate sample datasets for each screen.
+5. Standardize journal formatting
+For a Moment entry, display:
+Moment 10:20 PM
+Fullness 4/10 · Energy 6.5/10 · Hydration 7.5/10
+Use the same capitalization, labels, numeric values, date, and time everywhere that record appears.
+6. Add deletion confirmation
+The trash-can icons currently make deletion too easy.
+When the user taps delete, show a lightweight confirmation:
+Delete this moment?
+This will remove it from your journal.
+Buttons:
+Cancel
+Delete
+Deleting the record should remove it from Today, History, and any Trend calculations.
+Do not use alarming red styling everywhere. Keep the confirmation consistent with FeelFed’s calm design.
+7. Prepare entries for editing
+Make timeline entries tappable.
+For now, tapping an entry may open a simple detail view or bottom sheet showing the complete entry.
+Include an Edit action so the architecture is ready for users to correct something they recorded incorrectly.
+Editing an entry must update the same underlying journal record rather than creating a duplicate.
+8. Preserve empty states
+Add thoughtful empty states for new users.
+Today:
+Nothing recorded yet today.
+Start wherever you are.
+History:
+Your journal starts with your first check-in.
+Trends:
+Patterns will appear as you record more moments.
+Do not imply that the user failed, missed a goal, or broke a streak.
+9. Keep FeelFed non-judgmental
+Continue using descriptive rather than evaluative language.
+Do not add:
+calorie goals
+weight goals
+food scores
+eating grades
+streak pressure
+red/green “good or bad” indicators
+warnings simply because someone ate a small amount
+FeelFed records what happened and helps users notice patterns.
+10. Acceptance test
+Please test this exact flow:
+Open Today.
+Adjust Fullness, Energy, and Hydration.
+Tap Record this moment.
+Confirm the button displays ✓ Moment recorded.
+Confirm Last logged updates.
+Confirm the entry appears once in Today’s moments.
+Open History.
+Confirm the same entry appears there with identical values and timestamp.
+Open Trends.
+Confirm the data is included correctly in applicable calculations.
+Delete the record.
+Confirm it disappears from Today, History, and Trends.
+Do not make major visual changes during this pass. Prioritize reliable interaction behavior, consistent journal records, and clear user feedback.

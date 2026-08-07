@@ -25,6 +25,10 @@ export function FullnessRingHero() {
   const [hydration, setHydration] = useState(5);
   const [activeRing, setActiveRing] = useState<RingId | null>(null);
   const [justSaved, setJustSaved] = useState(false);
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (savedTimer.current) clearTimeout(savedTimer.current);
+  }, []);
 
   const reflection = getReflection(fullness, energy, hydration);
 
@@ -71,7 +75,8 @@ export function FullnessRingHero() {
     });
     setJustSaved(true);
     toast({ title: "Moment saved", description: "It's in Today and your History now." });
-    setTimeout(() => setJustSaved(false), 2000);
+    if (savedTimer.current) clearTimeout(savedTimer.current);
+    savedTimer.current = setTimeout(() => setJustSaved(false), 2000);
   }, [fullness, energy, hydration, reflection]);
 
   const chips: { id: RingId; label: string; phrase: string; value: number }[] = [
@@ -184,7 +189,7 @@ export function FullnessRingHero() {
           >
             {justSaved ? (
               <>
-                <Check className="h-4 w-4" /> Saved
+                <Check className="h-4 w-4" /> Moment recorded
               </>
             ) : (
               "Record this moment"
