@@ -147,13 +147,54 @@ function seedEntries(): Entry[] {
   return out;
 }
 
-let entries: Entry[] = seedEntries();
-let profile: Profile = {
+// ---- persistence (localStorage) ----
+// Entries and profile survive refreshes/app closes. On first run we seed the
+// sample data and persist it; afterwards localStorage is the source of truth.
+const ENTRIES_KEY = "feelfed:entries:v1";
+const PROFILE_KEY = "feelfed:profile:v1";
+const ID_KEY = "feelfed:idCounter:v1";
+
+function loadJSON<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveJSON(key: string, value: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage unavailable (private mode/quota) — keep working in-memory.
+  }
+}
+
+const savedCounter = loadJSON<number>(ID_KEY);
+if (typeof savedCounter === "number" && savedCounter > idCounter) {
+  idCounter = savedCounter;
+}
+
+const DEFAULT_PROFILE: Profile = {
   name: "Sam",
   remindersEnabled: true,
   gentleNudges: true,
   privateMode: true,
 };
+
+const savedEntries = loadJSON<Entry[]>(ENTRIES_KEY);
+let entries: Entry[] = Array.isArray(savedEntries) ? savedEntries : seedEntries();
+let profile: Profile = { ...DEFAULT_PROFILE, ...(loadJSON<Partial<Profile>>(PROFILE_KEY) ?? {}) };
+
+if (!Array.isArray(savedEntries)) {
+  saveJSON(ENTRIES_KEY, entries);
+}
+
+function persistEntries() {
+  saveJSON(ENTRIES_KEY, entries);
+  saveJSON(ID_KEY, idCounter);
+}
 
 const listeners = new Set<() => void>();
 function emit() {
@@ -175,18 +216,22 @@ export const store = {
     entries = [...entries, entry].sort(
       (a, b) => new Date(a.at).getTime() - new Date(b.at).getTime(),
     );
+    persistEntries();
     emit();
   },
   updateEntry(id: string, patch: Partial<Entry>) {
     entries = entries.map((e) => (e.id === id ? ({ ...e, ...patch } as Entry) : e));
+    persistEntries();
     emit();
   },
   removeEntry(id: string) {
     entries = entries.filter((e) => e.id !== id);
+    persistEntries();
     emit();
   },
   setProfile(patch: Partial<Profile>) {
     profile = { ...profile, ...patch };
+    saveJSON(PROFILE_KEY, profile);
     emit();
   },
 };
