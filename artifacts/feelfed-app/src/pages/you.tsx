@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import {
   Bell,
@@ -6,7 +7,10 @@ import {
   Sparkles,
   Info,
   ExternalLink,
+  RefreshCw,
+  Copy,
 } from "lucide-react";
+import { Input } from "@workspace/feelfed-ds/components/ui/input";
 import { Card, CardContent } from "@workspace/feelfed-ds/components/ui/card";
 import { Switch } from "@workspace/feelfed-ds/components/ui/switch";
 import { Button } from "@workspace/feelfed-ds/components/ui/button";
@@ -18,6 +22,7 @@ import { store } from "@/lib/store";
 export default function YouPage() {
   const profile = useProfile();
   const entries = useEntries();
+  const [linkCode, setLinkCode] = useState("");
 
   return (
     <div className="px-4 pt-6">
@@ -110,6 +115,85 @@ export default function YouPage() {
         </CardContent>
       </Card>
 
+      {/* Sync */}
+      <p className="font-sans text-sm font-semibold text-muted-foreground px-1 mb-2">Sync</p>
+      <Card className="mb-4">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+              <RefreshCw className="h-4 w-4" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="font-sans text-sm font-medium">Your sync code</p>
+              <p className="text-xs text-muted-foreground font-mono">
+                Your journal is saved to the server under this code. Keep it somewhere safe to
+                open your journal on another device.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <code
+              className="flex-1 truncate rounded-lg bg-secondary/10 px-3 py-2 text-xs font-mono"
+              data-testid="text-sync-code"
+            >
+              {store.getSyncCode()}
+            </code>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Copy sync code"
+              data-testid="button-copy-sync-code"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(store.getSyncCode());
+                  toast({ title: "Copied", description: "Sync code copied to clipboard." });
+                } catch {
+                  toast({ title: "Couldn't copy", description: "Select and copy the code manually." });
+                }
+              }}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+          <Separator />
+          <form
+            className="flex items-center gap-2"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const code = linkCode.trim();
+              if (!code) return;
+              try {
+                const count = await store.linkSyncCode(code);
+                setLinkCode("");
+                toast({
+                  title: count > 0 ? "Journal linked" : "Code linked",
+                  description:
+                    count > 0
+                      ? `Loaded ${count} entries from that journal.`
+                      : "No entries there yet — this journal now saves under that code.",
+                });
+              } catch {
+                toast({
+                  title: "Couldn't link",
+                  description: "Check the code and your connection, then try again.",
+                });
+              }
+            }}
+          >
+            <Input
+              value={linkCode}
+              onChange={(e) => setLinkCode(e.target.value)}
+              placeholder="Paste a sync code from another device"
+              aria-label="Sync code from another device"
+              data-testid="input-link-sync-code"
+            />
+            <Button type="submit" variant="outline" data-testid="button-link-sync-code">
+              Link
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
       {/* Privacy notes */}
       <Card className="mb-4 bg-secondary/5">
         <CardContent className="p-4">
@@ -121,8 +205,8 @@ export default function YouPage() {
                 scores — only what you choose to record.
               </p>
               <p>
-                This is a prototype. Accounts, sync, and subscriptions aren't built yet, so nothing
-                leaves this device.
+                This is a prototype. Your journal syncs privately under your sync code — there are
+                no accounts, and nothing else leaves this device.
               </p>
             </div>
           </div>

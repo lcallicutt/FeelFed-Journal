@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: moments
     description: Moment journal entries
+  - name: entries
+    description: Synced journal entries (all check-in kinds)
 paths:
   /healthz:
     get:
@@ -79,6 +81,102 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MomentsListResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /entries:
+    get:
+      operationId: getEntries
+      tags: [entries]
+      summary: Get all journal entries for a device
+      description: Returns every synced journal entry for a device, oldest first
+      parameters:
+        - in: query
+          name: deviceId
+          required: true
+          schema:
+            type: string
+          description: Device/session identifier
+      responses:
+        "200":
+          description: List of entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntriesListResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: upsertEntry
+      tags: [entries]
+      summary: Create or update a journal entry
+      description: Upserts a single journal entry keyed by deviceId + entry id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntryUpsert"
+      responses:
+        "200":
+          description: Entry saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JournalEntry"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /entries/bulk:
+    post:
+      operationId: bulkUpsertEntries
+      tags: [entries]
+      summary: Bulk-upload journal entries
+      description: Upserts many entries at once (initial sync of local data)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntriesBulkUpsert"
+      responses:
+        "200":
+          description: Entries saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntriesCountResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /entries/delete:
+    post:
+      operationId: deleteEntry
+      tags: [entries]
+      summary: Delete a journal entry
+      description: Removes a single journal entry for a device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntryDelete"
+      responses:
+        "204":
+          description: Entry deleted
         "400":
           description: Invalid input
           content:
@@ -155,6 +253,72 @@ components:
             $ref: "#/components/schemas/MomentRecord"
       required:
         - moments
+    JournalEntry:
+      type: object
+      description: A journal entry as the app stores it; kind-specific fields allowed
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            [before, during, after, hydration, energy, movement, followup, moment]
+        at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - kind
+        - at
+    EntryUpsert:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        entry:
+          $ref: "#/components/schemas/JournalEntry"
+      required:
+        - deviceId
+        - entry
+    EntryDelete:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        entryId:
+          type: string
+      required:
+        - deviceId
+        - entryId
+    EntriesBulkUpsert:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/JournalEntry"
+      required:
+        - deviceId
+        - entries
+    EntriesListResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/JournalEntry"
+      required:
+        - entries
+    EntriesCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+      required:
+        - count
     ErrorResponse:
       type: object
       properties:

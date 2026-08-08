@@ -2,3 +2,5 @@
 - [JSX generic args break vite babel](jsx-generic-args.md) — never write `<Comp<Type>>` in .tsx here; cast in callbacks instead
 - [Artifact registration for pre-built dirs](artifact-registration.md) — if a subagent builds artifact files first, register via createArtifact then overlay; verifyAndReplaceArtifactToml can't create new artifacts
 - [E2E testing fallback](e2e-testing-fallback.md) — testing subagent kind unavailable here; run playwright-core with nix chromium from .agents/e2e/ instead
+- [API codegen quirks](api-codegen-quirks.md) — orval must stay pinned to zod v3 output; generated schemas strip unknown fields; don't mix path+query params
+- [Journal sync design](journal-sync.md) — app journal syncs to /api/entries keyed by a localStorage sync code (deviceId); localStorage stays the offline cache

@@ -44,6 +44,53 @@ export interface MomentsListResponse {
   moments: MomentRecord[];
 }
 
+export type JournalEntryKind = typeof JournalEntryKind[keyof typeof JournalEntryKind];
+
+
+export const JournalEntryKind = {
+  before: 'before',
+  during: 'during',
+  after: 'after',
+  hydration: 'hydration',
+  energy: 'energy',
+  movement: 'movement',
+  followup: 'followup',
+  moment: 'moment',
+} as const;
+
+/**
+ * A journal entry as the app stores it; kind-specific fields allowed
+ */
+export interface JournalEntry {
+  id: string;
+  kind: JournalEntryKind;
+  at: string;
+  [key: string]: unknown;
+ }
+
+export interface EntryUpsert {
+  deviceId: string;
+  entry: JournalEntry;
+}
+
+export interface EntryDelete {
+  deviceId: string;
+  entryId: string;
+}
+
+export interface EntriesBulkUpsert {
+  deviceId: string;
+  entries: JournalEntry[];
+}
+
+export interface EntriesListResponse {
+  entries: JournalEntry[];
+}
+
+export interface EntriesCountResponse {
+  count: number;
+}
+
 export interface ErrorResponse {
   error: string;
 }
@@ -59,5 +106,12 @@ deviceId: string;
  * @maximum 100
  */
 limit?: number;
+};
+
+export type GetEntriesParams = {
+/**
+ * Device/session identifier
+ */
+deviceId: string;
 };
 

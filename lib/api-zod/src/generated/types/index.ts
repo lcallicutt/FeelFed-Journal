@@ -6,9 +6,17 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './entriesBulkUpsert';
+export * from './entriesCountResponse';
+export * from './entriesListResponse';
+export * from './entryDelete';
+export * from './entryUpsert';
 export * from './errorResponse';
+export * from './getEntriesParams';
 export * from './getMomentsParams';
 export * from './healthStatus';
+export * from './journalEntry';
+export * from './journalEntryKind';
 export * from './momentRecord';
 export * from './momentsListResponse';
 export * from './saveMomentRequest';

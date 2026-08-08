@@ -33,7 +33,7 @@ export const saveMomentBodyHydrationMax = 10;
 
 
 export const SaveMomentBody = zod.object({
-  "deviceId": zod.string().describe('Device/session identifier from localStorage'),
+  "deviceId": zod.string().describe('Device\/session identifier from localStorage'),
   "fullness": zod.number().int().min(saveMomentBodyFullnessMin).max(saveMomentBodyFullnessMax),
   "energy": zod.number().int().min(saveMomentBodyEnergyMin).max(saveMomentBodyEnergyMax),
   "hydration": zod.number().int().min(saveMomentBodyHydrationMin).max(saveMomentBodyHydrationMax),
@@ -61,7 +61,7 @@ export const getMomentsQueryLimitMax = 100;
 
 
 export const GetMomentsQueryParams = zod.object({
-  "deviceId": zod.coerce.string().describe('Device/session identifier'),
+  "deviceId": zod.coerce.string().describe('Device\/session identifier'),
   "limit": zod.coerce.number().int().min(1).max(getMomentsQueryLimitMax).default(getMomentsQueryLimitDefault).describe('Maximum number of moments to return')
 })
 
@@ -76,3 +76,72 @@ export const GetMomentsResponse = zod.object({
   "createdAt": zod.coerce.date()
 }))
 })
+
+
+/**
+ * Returns every synced journal entry for a device, oldest first
+ * @summary Get all journal entries for a device
+ */
+export const GetEntriesQueryParams = zod.object({
+  "deviceId": zod.coerce.string().describe('Device\/session identifier')
+})
+
+export const GetEntriesResponse = zod.object({
+  "entries": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['before', 'during', 'after', 'hydration', 'energy', 'movement', 'followup', 'moment']),
+  "at": zod.coerce.date()
+}).describe('A journal entry as the app stores it; kind-specific fields allowed'))
+})
+
+
+/**
+ * Upserts a single journal entry keyed by deviceId + entry id
+ * @summary Create or update a journal entry
+ */
+export const UpsertEntryBody = zod.object({
+  "deviceId": zod.string(),
+  "entry": zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['before', 'during', 'after', 'hydration', 'energy', 'movement', 'followup', 'moment']),
+  "at": zod.coerce.date()
+}).describe('A journal entry as the app stores it; kind-specific fields allowed')
+})
+
+export const UpsertEntryResponse = zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['before', 'during', 'after', 'hydration', 'energy', 'movement', 'followup', 'moment']),
+  "at": zod.coerce.date()
+}).describe('A journal entry as the app stores it; kind-specific fields allowed')
+
+
+/**
+ * Upserts many entries at once (initial sync of local data)
+ * @summary Bulk-upload journal entries
+ */
+export const BulkUpsertEntriesBody = zod.object({
+  "deviceId": zod.string(),
+  "entries": zod.array(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['before', 'during', 'after', 'hydration', 'energy', 'movement', 'followup', 'moment']),
+  "at": zod.coerce.date()
+}).describe('A journal entry as the app stores it; kind-specific fields allowed'))
+})
+
+export const BulkUpsertEntriesResponse = zod.object({
+  "count": zod.number().int()
+})
+
+
+/**
+ * Removes a single journal entry for a device
+ * @summary Delete a journal entry
+ */
+export const DeleteEntryBody = zod.object({
+  "deviceId": zod.string(),
+  "entryId": zod.string()
+})
+
+export const DeleteEntryResponse = zod.void()
+
+
