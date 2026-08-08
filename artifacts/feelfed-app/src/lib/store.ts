@@ -188,6 +188,7 @@ const DEFAULT_PROFILE: Profile = {
   remindersEnabled: true,
   gentleNudges: true,
   privateMode: true,
+  reduceAnimations: false,
 };
 
 const savedEntries = loadJSON<Entry[]>(ENTRIES_KEY);

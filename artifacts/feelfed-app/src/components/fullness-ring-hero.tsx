@@ -13,6 +13,7 @@ import {
   type RingId,
 } from "@/lib/reflections";
 import { store, nextId } from "@/lib/store";
+import { useProfile } from "@/hooks/use-store";
 
 /**
  * Today's hero: the website's draggable rings adapted for the app. Dragging sets
@@ -32,6 +33,9 @@ export function FullnessRingHero() {
   }, []);
 
   const reflection = getReflection(fullness, energy, hydration);
+  // Calmer screen: skip the typewriter/caret when the user turned off
+  // decorative animations in Settings (OS reduced-motion hides the caret via CSS).
+  const { reduceAnimations } = useProfile();
 
   // typewriter for the reflection title, retriggered only when title changes
   const [typed, setTyped] = useState("");
@@ -40,6 +44,17 @@ export function FullnessRingHero() {
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
+    if (reduceAnimations) {
+      // Calm display: cancel any in-flight typewriter and show everything at once.
+      lastTitle.current = reflection.title;
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+      setTyped(reflection.title);
+      setBodyVisible(true);
+      return;
+    }
+    // If the full title is already shown (e.g. animations were just re-enabled),
+    // don't retype it — only animate when the title actually changes.
     if (reflection.title === lastTitle.current) return;
     lastTitle.current = reflection.title;
     timers.current.forEach(clearTimeout);
@@ -60,7 +75,7 @@ export function FullnessRingHero() {
       type();
     }, 120);
     timers.current.push(start);
-  }, [reflection.title]);
+  }, [reflection.title, reduceAnimations]);
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
@@ -156,7 +171,7 @@ export function FullnessRingHero() {
 
         <p className="font-serif italic text-lg leading-snug text-secondary min-h-[1.6rem]">
           {typed}
-          <span className="feelfed-caret" aria-hidden />
+          {!reduceAnimations && <span className="feelfed-caret" aria-hidden />}
         </p>
 
         <div

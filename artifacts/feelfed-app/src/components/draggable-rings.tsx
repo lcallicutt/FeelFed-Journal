@@ -1,6 +1,7 @@
 import { useRef, useCallback, useState, useEffect, useId } from "react";
 import type { RingId } from "@/lib/reflections";
 import { fullnessPhrase, energyPhrase, hydrationPhrase } from "@/lib/reflections";
+import { useProfile } from "@/hooks/use-store";
 
 // Drag mechanics + bowl animation ported from the FeelFed marketing site
 // (artifacts/feelfed-hero/src/components/DraggableRings.tsx). The colours used
@@ -116,6 +117,14 @@ export default function DraggableRings({
   const [showHint, setShowHint] = useState(false);
   const interactedRef = useRef(false);
 
+  // Decorative motion off when the user asked for a calmer screen (in-app
+  // toggle) or the OS requests reduced motion.
+  const { reduceAnimations } = useProfile();
+  const reduceMotion =
+    reduceAnimations ||
+    (typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
   useEffect(() => {
     const t1 = setTimeout(() => { if (!interactedRef.current) setLoadPulse(true); }, 1400);
     const t2 = setTimeout(() => { if (!interactedRef.current) setShowHint(true); }, 1700);
@@ -142,15 +151,16 @@ export default function DraggableRings({
     onActiveChange?.(ring);
   }, [onActiveChange]);
 
-  // water + bubble rAF loop
+  // water + bubble rAF loop. With reduced motion we draw one still frame of
+  // the water (no waves, no bubbles) and redraw it only when values change.
   useEffect(() => {
-    const tick = () => {
+    const drawFrame = (animate: boolean) => {
       const { f, h } = valRef.current;
       const yRef = 244 - 68 * f;
       const yVp = vpY(yRef);
-      const ampVp = (1.6 + h * 8) * BOWL_SCALE;
-      phaseRef.current += 0.035 + h * 0.085;
-      const p = phaseRef.current;
+      const ampVp = animate ? (1.6 + h * 8) * BOWL_SCALE : 0;
+      if (animate) phaseRef.current += 0.035 + h * 0.085;
+      const p = animate ? phaseRef.current : 0;
       const oVp = Math.sin(p) * 6 * BOWL_SCALE;
 
       const water = waterRef.current;
@@ -169,6 +179,10 @@ export default function DraggableRings({
 
       bubElemsRef.current.forEach((el, i) => {
         if (!el) return;
+        if (!animate) {
+          el.setAttribute("opacity", "0");
+          return;
+        }
         const b = bubDataRef.current[i];
         b.ph += b.sp * 0.012 * (0.3 + h);
         if (b.ph > 1) b.ph = 0;
@@ -182,11 +196,18 @@ export default function DraggableRings({
         el.setAttribute("opacity", (Math.max(0, h - 0.35) * 1.4 * (1 - b.ph)).toFixed(3));
       });
 
-      rafRef.current = requestAnimationFrame(tick);
+      if (animate) rafRef.current = requestAnimationFrame(tick);
     };
+    const tick = () => drawFrame(true);
+    if (reduceMotion) {
+      drawFrame(false);
+      return undefined;
+    }
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, []);
+    // When motion is reduced there is no loop, so redraw the still frame as
+    // the values change; while animating, the loop reads valRef itself.
+  }, [reduceMotion, reduceMotion ? fullness : 0, reduceMotion ? hydration : 0]);
 
   const getAngle = useCallback((clientX: number, clientY: number): number => {
     const svg = svgRef.current;
@@ -357,7 +378,7 @@ export default function DraggableRings({
           fill={color} filter={`url(#${glowId})`}
           opacity={isDraggingThis ? 0.7 : isActiveThis ? 0.5 : 0.3}
           style={{ pointerEvents: "none", transition: "opacity 200ms ease" }} />
-        {loadPulse && (
+        {loadPulse && !reduceMotion && (
           <circle cx={knob.x} cy={knob.y} r={10} fill="none" stroke={color} strokeWidth={2}
             className="feelfed-knob-pulse" style={{ pointerEvents: "none" }} />
         )}
@@ -477,7 +498,7 @@ export default function DraggableRings({
             const bx = k.x + (dx / len) * 34;
             const by = k.y + (dy / len) * 24;
             return (
-              <g className="feelfed-hint-float" style={{ pointerEvents: "none" }}>
+              <g className={reduceMotion ? undefined : "feelfed-hint-float"} style={{ pointerEvents: "none" }}>
                 <rect x={bx - 54} y={by - 14} width={108} height={28} rx={14}
                   fill="rgba(255,255,255,0.95)" stroke="rgba(58,143,136,0.35)" strokeWidth={1} />
                 <text x={bx} y={by + 1} fill="#1F4E49" fontSize={12}

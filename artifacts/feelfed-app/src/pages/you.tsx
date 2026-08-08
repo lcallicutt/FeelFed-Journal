@@ -6,6 +6,7 @@ import {
   Lock,
   Sparkles,
   Info,
+  Waves,
   ExternalLink,
   RefreshCw,
   Copy,
@@ -73,6 +74,25 @@ export default function YouPage() {
               onCheckedChange={(v) => store.setProfile({ gentleNudges: v })}
               aria-label="Gentle nudges"
               data-testid="switch-nudges"
+            />
+          </SettingRow>
+        </CardContent>
+      </Card>
+
+      {/* Display */}
+      <p className="font-sans text-sm font-semibold text-muted-foreground px-1 mb-2">Display</p>
+      <Card className="mb-4">
+        <CardContent className="p-0">
+          <SettingRow
+            icon={Waves}
+            title="Ambient animations"
+            description="Floating bubbles and gentle motion on the Today screen. Turn off for a calmer, battery-friendly screen."
+          >
+            <Switch
+              checked={!profile.reduceAnimations}
+              onCheckedChange={(v) => store.setProfile({ reduceAnimations: !v })}
+              aria-label="Ambient animations"
+              data-testid="switch-ambient-animations"
             />
           </SettingRow>
         </CardContent>

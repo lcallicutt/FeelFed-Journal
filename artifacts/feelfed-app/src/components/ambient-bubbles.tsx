@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { tokens } from "@workspace/feelfed-ds";
+import { useProfile } from "@/hooks/use-store";
 
 /**
  * Ambient rising bubbles, ported from the marketing site's MoteCanvas and
@@ -33,6 +34,7 @@ export default function AmbientBubbles({ fullness, energy, hydration }: AmbientB
   const animFrameRef = useRef<number>(0);
   const valsRef = useRef({ fullness, energy, hydration });
   valsRef.current = { fullness, energy, hydration };
+  const { reduceAnimations } = useProfile();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,8 +42,13 @@ export default function AmbientBubbles({ fullness, energy, hydration }: AmbientB
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Respect reduced-motion: no ambient animation at all.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Respect reduced-motion (OS setting or in-app toggle): no ambient
+    // animation at all. Clear any bubbles left from a previous run.
+    if (reduceAnimations || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      motesRef.current = [];
+      return;
+    }
 
     const parent = canvas.parentElement;
     const resize = () => {
@@ -142,7 +149,7 @@ export default function AmbientBubbles({ fullness, energy, hydration }: AmbientB
       cancelAnimationFrame(animFrameRef.current);
       ro.disconnect();
     };
-  }, []);
+  }, [reduceAnimations]);
 
   return (
     <canvas

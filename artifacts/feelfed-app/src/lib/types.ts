@@ -103,6 +103,8 @@ export interface Profile {
   remindersEnabled: boolean;
   gentleNudges: boolean;
   privateMode: boolean;
+  /** Turn off decorative/ambient animations (calmer screen, easier on battery). */
+  reduceAnimations: boolean;
 }
 
 // ---- Display helpers (plain, supportive language — no judgment) ----
