@@ -414,9 +414,23 @@ export const store = {
         // Storage unavailable — the link lasts for this session only.
       }
       if (remote.length > 0) {
-        entries = sortByTime(remote);
+        // Merge by entry id: the linked journal wins for shared ids, but
+        // anything only this device knows is kept and uploaded so nothing
+        // logged before linking is lost.
+        const byId = new Map(remote.map((e) => [e.id, e] as const));
+        const localOnly = entries.filter((e) => !byId.has(e.id));
+        entries = sortByTime([...remote, ...localOnly]);
+        // Keep the id counter ahead of any synced ids like "e1042" so new
+        // local entries can't collide with the linked journal's.
+        for (const e of entries) {
+          const m = /^e(\d+)$/.exec(e.id);
+          if (m && Number(m[1]) > idCounter) idCounter = Number(m[1]);
+        }
         persistEntries();
         emit();
+        if (localOnly.length > 0) {
+          await pushEntriesBulk(deviceId, localOnly);
+        }
       } else if (entries.length > 0) {
         await pushEntriesBulk(deviceId, entries);
       }
