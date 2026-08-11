@@ -9,4 +9,6 @@ import type { JournalEntry } from './journalEntry';
 
 export interface EntriesListResponse {
   entries: JournalEntry[];
+  /** Server clock at query time; pass as `since` next sync */
+  serverTime: Date;
 }

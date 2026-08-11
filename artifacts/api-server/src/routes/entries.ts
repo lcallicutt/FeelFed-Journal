@@ -6,7 +6,7 @@ import {
   BulkUpsertEntriesBody,
   DeleteEntryBody,
 } from "@workspace/api-zod";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, gte, sql } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -36,13 +36,28 @@ router.get("/entries", async (req, res) => {
     return;
   }
 
+  const { deviceId, since } = parsed.data;
+
+  // Capture the clock BEFORE the query: anything updated while the query
+  // runs has updatedAt >= serverTime and is re-sent next sync (gte + an
+  // idempotent client merge make the overlap harmless, never a gap).
+  const serverTime = new Date();
+
+  const conditions = [eq(journalEntriesTable.deviceId, deviceId)];
+  if (since) {
+    conditions.push(gte(journalEntriesTable.updatedAt, since));
+  }
+
   const rows = await db
     .select()
     .from(journalEntriesTable)
-    .where(eq(journalEntriesTable.deviceId, parsed.data.deviceId))
+    .where(and(...conditions))
     .orderBy(asc(journalEntriesTable.at));
 
-  res.json({ entries: rows.map((r) => r.data) });
+  res.json({
+    entries: rows.map((r) => r.data),
+    serverTime: serverTime.toISOString(),
+  });
 });
 
 router.put("/entries", async (req, res) => {

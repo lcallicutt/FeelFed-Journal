@@ -91,8 +91,12 @@ paths:
     get:
       operationId: getEntries
       tags: [entries]
-      summary: Get all journal entries for a device
-      description: Returns every synced journal entry for a device, oldest first
+      summary: Get journal entries for a device
+      description: >-
+        Returns synced journal entries for a device, oldest first. When
+        `since` is provided, only entries created or updated at or after
+        that server timestamp are returned (incremental sync); the response
+        always includes `serverTime` to use as the next `since` cursor.
       parameters:
         - in: query
           name: deviceId
@@ -100,6 +104,15 @@ paths:
           schema:
             type: string
           description: Device/session identifier
+        - in: query
+          name: since
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: >-
+            Only return entries created/updated at or after this server
+            timestamp (from a previous response's serverTime)
       responses:
         "200":
           description: List of entries
@@ -310,8 +323,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/JournalEntry"
+        serverTime:
+          type: string
+          format: date-time
+          description: Server clock at query time; pass as `since` next sync
       required:
         - entries
+        - serverTime
     EntriesCountResponse:
       type: object
       properties:

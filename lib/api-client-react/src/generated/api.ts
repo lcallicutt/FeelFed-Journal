@@ -313,8 +313,8 @@ export const getGetEntriesUrl = (params: GetEntriesParams,) => {
 }
 
 /**
- * Returns every synced journal entry for a device, oldest first
- * @summary Get all journal entries for a device
+ * Returns synced journal entries for a device, oldest first. When `since` is provided, only entries created or updated at or after that server timestamp are returned (incremental sync); the response always includes `serverTime` to use as the next `since` cursor.
+ * @summary Get journal entries for a device
  */
 export const getEntries = async (params: GetEntriesParams, options?: Parameters<typeof customFetch>[1]): Promise<EntriesListResponse> => {
 
@@ -361,7 +361,7 @@ export type GetEntriesQueryError = ErrorType<ErrorResponse>
 
 
 /**
- * @summary Get all journal entries for a device
+ * @summary Get journal entries for a device
  */
 
 export function useGetEntries<TData = Awaited<ReturnType<typeof getEntries>>, TError = ErrorType<ErrorResponse>>(

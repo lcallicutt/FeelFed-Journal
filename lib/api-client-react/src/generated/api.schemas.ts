@@ -85,6 +85,8 @@ export interface EntriesBulkUpsert {
 
 export interface EntriesListResponse {
   entries: JournalEntry[];
+  /** Server clock at query time; pass as `since` next sync */
+  serverTime: string;
 }
 
 export interface EntriesCountResponse {
@@ -113,5 +115,9 @@ export type GetEntriesParams = {
  * Device/session identifier
  */
 deviceId: string;
+/**
+ * Only return entries created/updated at or after this server timestamp (from a previous response's serverTime)
+ */
+since?: string;
 };
 

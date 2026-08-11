@@ -224,6 +224,8 @@ function sortByTime(list: Entry[]): Entry[] {
 // never be clobbered by a server response. The dirty/tombstone sets are
 // persisted and only cleared after the server confirms each push.
 const PENDING_KEY = "feelfed:pendingSync:v1";
+
+const SYNC_CURSOR_KEY = "feelfed:syncCursor:v1";
 const savedPending = loadJSON<{ touched?: string[]; deleted?: string[] }>(PENDING_KEY);
 const locallyTouched = new Set<string>(savedPending?.touched ?? []);
 const locallyDeleted = new Set<string>(savedPending?.deleted ?? []);
@@ -282,6 +284,21 @@ function mergeRemote(remote: Entry[]): { merged: Entry[]; localOnly: Entry[] } {
   return { merged: sortByTime([...byId.values()]), localOnly };
 }
 
+/**
+ * Merge an incremental (since-cursor) batch into the local cache. Unlike a
+ * full sync, entries missing from the batch are simply unchanged on the
+ * server — they must be kept, never treated as local-only or re-uploaded.
+ * Tombstoned ids stay deleted and dirty ids keep the local copy.
+ */
+function mergeDelta(remote: Entry[]): Entry[] {
+  const byId = new Map(entries.map((e) => [e.id, e] as const));
+  for (const r of remote) {
+    if (locallyDeleted.has(r.id)) continue;
+    if (locallyTouched.has(r.id)) continue;
+    byId.set(r.id, r);
+  }
+  return sortByTime([...byId.values()]);
+}
 async function initialSync() {
   try {
     // Retry deletions that never reached the server (tombstones survive reloads).
@@ -289,13 +306,30 @@ async function initialSync() {
       await deleteEntryRemote(deviceId, id);
       ackDeleted(id);
     }
-    const remote = await fetchEntries(deviceId);
+    // Incremental sync only makes sense when the local cache survived from
+    // the session that recorded the cursor; if the cache is gone (cleared
+    // storage), fall back to a full pull so no older entries are missed.
+    const useCursor = syncCursor !== null && Array.isArray(savedEntries);
+    const { entries: remote, serverTime } = await fetchEntries(
+      deviceId,
+      useCursor ? syncCursor ?? undefined : undefined,
+    );
+    if (useCursor) {
+      if (remote.length > 0) {
+        entries = mergeDelta(remote);
+        persistEntries();
+        emit();
+      }
+      setSyncCursor(serverTime);
+      return;
+    }
     if (remote.length === 0) {
       if (entries.length > 0) {
         const snapshot = [...entries];
         await pushEntriesBulk(deviceId, snapshot);
         for (const e of snapshot) ackTouched(e.id, e);
       }
+      setSyncCursor(serverTime);
       return;
     }
     const { merged, localOnly } = mergeRemote(remote);
@@ -311,6 +345,7 @@ async function initialSync() {
       await pushEntriesBulk(deviceId, localOnly);
       for (const e of localOnly) ackTouched(e.id, e);
     }
+    setSyncCursor(serverTime);
   } catch (err) {
     console.warn("FeelFed: journal sync unavailable, working from local copy.", err);
   }
@@ -400,7 +435,8 @@ export const store = {
     const trimmed = code.trim();
     if (!trimmed) throw new Error("Enter a sync code first.");
     return enqueueSync(async () => {
-      const remote = await fetchEntries(trimmed);
+      // Always a full pull — the cursor belongs to the previous journal.
+      const { entries: remote, serverTime } = await fetchEntries(trimmed);
       // Pending dirty flags/tombstones refer to the previous journal; they
       // must not carry over or they could edit/delete entries of the linked
       // journal that happen to share ids (e.g. seeded ids).
@@ -408,6 +444,7 @@ export const store = {
       locallyDeleted.clear();
       persistPending();
       deviceId = trimmed;
+      setSyncCursor(serverTime);
       try {
         localStorage.setItem("feelfed:deviceId:v1", trimmed);
       } catch {
@@ -438,3 +475,15 @@ export const store = {
     });
   },
 };
+
+let syncCursor: string | null = loadJSON<string>(SYNC_CURSOR_KEY);
+
+function setSyncCursor(value: string | null) {
+  syncCursor = value;
+  try {
+    if (value === null) localStorage.removeItem(SYNC_CURSOR_KEY);
+    else saveJSON(SYNC_CURSOR_KEY, value);
+  } catch {
+    // Storage unavailable — cursor lasts for this session only.
+  }
+}

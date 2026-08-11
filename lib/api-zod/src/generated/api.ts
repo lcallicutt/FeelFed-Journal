@@ -79,11 +79,12 @@ export const GetMomentsResponse = zod.object({
 
 
 /**
- * Returns every synced journal entry for a device, oldest first
- * @summary Get all journal entries for a device
+ * Returns synced journal entries for a device, oldest first. When `since` is provided, only entries created or updated at or after that server timestamp are returned (incremental sync); the response always includes `serverTime` to use as the next `since` cursor.
+ * @summary Get journal entries for a device
  */
 export const GetEntriesQueryParams = zod.object({
-  "deviceId": zod.coerce.string().describe('Device\/session identifier')
+  "deviceId": zod.coerce.string().describe('Device\/session identifier'),
+  "since": zod.coerce.date().optional().describe('Only return entries created\/updated at or after this server timestamp (from a previous response\'s serverTime)')
 })
 
 export const GetEntriesResponse = zod.object({
@@ -91,7 +92,8 @@ export const GetEntriesResponse = zod.object({
   "id": zod.string(),
   "kind": zod.enum(['before', 'during', 'after', 'hydration', 'energy', 'movement', 'followup', 'moment']),
   "at": zod.coerce.date()
-}).describe('A journal entry as the app stores it; kind-specific fields allowed'))
+}).describe('A journal entry as the app stores it; kind-specific fields allowed')),
+  "serverTime": zod.coerce.date().describe('Server clock at query time; pass as `since` next sync')
 })
 
 

@@ -11,4 +11,8 @@ export type GetEntriesParams = {
  * Device/session identifier
  */
 deviceId: string;
+/**
+ * Only return entries created/updated at or after this server timestamp (from a previous response's serverTime)
+ */
+since?: Date;
 };

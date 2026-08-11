@@ -46,10 +46,20 @@ async function request(path: string, init?: RequestInit): Promise<Response> {
   return res;
 }
 
-export async function fetchEntries(deviceId: string): Promise<Entry[]> {
-  const res = await request(`/entries?deviceId=${encodeURIComponent(deviceId)}`);
-  const body = (await res.json()) as { entries: Entry[] };
-  return body.entries;
+export interface EntriesResponse {
+  entries: Entry[];
+  /** Server clock at query time; pass back as `since` for incremental sync. */
+  serverTime: string;
+}
+
+export async function fetchEntries(
+  deviceId: string,
+  since?: string,
+): Promise<EntriesResponse> {
+  const params = new URLSearchParams({ deviceId });
+  if (since) params.set("since", since);
+  const res = await request(`/entries?${params.toString()}`);
+  return (await res.json()) as EntriesResponse;
 }
 
 export async function pushEntry(deviceId: string, entry: Entry): Promise<void> {
