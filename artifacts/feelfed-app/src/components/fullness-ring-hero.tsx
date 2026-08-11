@@ -14,6 +14,7 @@ import {
 } from "@/lib/reflections";
 import { store, nextId } from "@/lib/store";
 import { useProfile } from "@/hooks/use-store";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 /**
  * Today's hero: the website's draggable rings adapted for the app. Dragging sets
@@ -35,7 +36,9 @@ export function FullnessRingHero() {
   const reflection = getReflection(fullness, energy, hydration);
   // Calmer screen: skip the typewriter/caret when the user turned off
   // decorative animations in Settings (OS reduced-motion hides the caret via CSS).
-  const { reduceAnimations } = useProfile();
+  const { reduceAnimations: reduceAnimationsPref } = useProfile();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const reduceAnimations = reduceAnimationsPref || prefersReducedMotion;
 
   // typewriter for the reflection title, retriggered only when title changes
   const [typed, setTyped] = useState("");

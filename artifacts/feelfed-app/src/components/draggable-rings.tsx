@@ -2,6 +2,7 @@ import { useRef, useCallback, useState, useEffect, useId } from "react";
 import type { RingId } from "@/lib/reflections";
 import { fullnessPhrase, energyPhrase, hydrationPhrase } from "@/lib/reflections";
 import { useProfile } from "@/hooks/use-store";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 // Drag mechanics + bowl animation ported from the FeelFed marketing site
 // (artifacts/feelfed-hero/src/components/DraggableRings.tsx). The colours used
@@ -120,10 +121,8 @@ export default function DraggableRings({
   // Decorative motion off when the user asked for a calmer screen (in-app
   // toggle) or the OS requests reduced motion.
   const { reduceAnimations } = useProfile();
-  const reduceMotion =
-    reduceAnimations ||
-    (typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const reduceMotion = reduceAnimations || prefersReducedMotion;
 
   useEffect(() => {
     const t1 = setTimeout(() => { if (!interactedRef.current) setLoadPulse(true); }, 1400);
